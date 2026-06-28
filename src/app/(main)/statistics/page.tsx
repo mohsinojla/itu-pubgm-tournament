@@ -1,35 +1,49 @@
-import { auth } from "@/lib/auth/auth";
 import { connectDB } from "@/lib/db/mongoose";
-import PlayerStats from "@/lib/db/models/PlayerStats";
-import { isSuperAdmin, hasPermission } from "@/lib/auth/permissions";
-import { PERMISSIONS } from "@/lib/constants/permissions";
+import User from "@/lib/db/models/User";
 import PageHero from "@/components/common/PageHero";
-import StatsTable from "@/components/stats/StatsTable";
+import DemographicsCharts from "@/components/stats/DemographicsCharts";
 
 export const dynamic = "force-dynamic";
 
 export default async function StatisticsPage() {
-  const [session] = await Promise.all([auth(), connectDB()]);
+  await connectDB();
 
-  const canViewHidden =
-    session?.user &&
-    (isSuperAdmin(session.user) || hasPermission(session.user, PERMISSIONS.VIEW_STATS));
-
-  const query = canViewHidden ? {} : { isHidden: { $ne: true } };
-
-  const stats = await PlayerStats.find(query)
-    .sort({ totalKills: -1 })
-    .populate("userId", "name photo pubgName rollNumber isVerifiedPlayer")
-    .populate("teamId", "name tag")
+  const users = await User.find({ profileCompleted: true })
+    .select("gender degreeProgramme semester")
     .lean();
+
+  const genderMap: Record<string, number> = { male: 0, female: 0, other: 0 };
+  const degreeMap: Record<string, number> = {};
+  const deptMap: Record<string, number> = {};
+  const semesterMap: Record<string, number> = {};
+
+  for (const u of users) {
+    genderMap[u.gender ?? "other"] = (genderMap[u.gender ?? "other"] ?? 0) + 1;
+
+    if (u.degreeProgramme) {
+      const parts = (u.degreeProgramme as string).split(" ");
+      const level = parts[0]; // BS / MS / PhD
+      const dept = parts.slice(1).join(" ");
+      degreeMap[level] = (degreeMap[level] ?? 0) + 1;
+      if (dept) deptMap[dept] = (deptMap[dept] ?? 0) + 1;
+    }
+
+    if (u.semester) {
+      const key = String(u.semester);
+      semesterMap[key] = (semesterMap[key] ?? 0) + 1;
+    }
+  }
 
   return (
     <>
-      <PageHero title="Statistics" subtitle="Player performance across all matches" />
-      <div className="max-w-6xl mx-auto px-4 py-10">
-        <StatsTable
-          stats={JSON.parse(JSON.stringify(stats))}
-          isAdmin={!!canViewHidden}
+      <PageHero title="Community Stats" subtitle="Registration demographics at a glance" />
+      <div className="max-w-5xl mx-auto px-4 py-10">
+        <DemographicsCharts
+          total={users.length}
+          gender={genderMap}
+          degreeLevel={degreeMap}
+          department={deptMap}
+          semester={semesterMap}
         />
       </div>
     </>

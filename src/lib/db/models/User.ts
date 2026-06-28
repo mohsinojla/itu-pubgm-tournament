@@ -51,7 +51,7 @@ const UserSchema = new Schema<IUser>(
     pubgId: { type: String, trim: true },
     pubgName: { type: String, trim: true },
     gender: { type: String, enum: ["male", "female", "other"] },
-    semester: { type: Number, min: 1, max: 12 },
+    semester: { type: Number, min: 1, max: 8 },
     degreeProgramme: { type: String },
     photo: { type: String },
     whatsapp: { type: String, trim: true },

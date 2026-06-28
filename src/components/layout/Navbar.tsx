@@ -26,14 +26,15 @@ import {
 import { cn } from "@/lib/utils/cn";
 import NotificationBell from "./NotificationBell";
 
+// Community replaces Teams in the navbar. Teams is still accessible via the home page CTA.
 const navLinks = [
   { href: "/", label: "Home", icon: Home },
-  { href: "/teams", label: "Teams", icon: Users },
   { href: "/schedule", label: "Schedule", icon: Calendar },
   { href: "/results", label: "Results", icon: Swords },
   { href: "/statistics", label: "Stats", icon: BarChart3 },
   { href: "/honour-board", label: "Honours", icon: Trophy },
   { href: "/gallery", label: "Gallery", icon: ImageIcon },
+  { href: "/community", label: "Community", icon: Users },
   { href: "/announcements", label: "News", icon: Megaphone },
   { href: "/rules", label: "Rules", icon: BookOpen },
   { href: "/prizes", label: "Prizes", icon: Gift },
@@ -75,7 +76,7 @@ export default function Navbar() {
             </div>
           </Link>
 
-          {/* Desktop Nav Links */}
+          {/* Desktop Nav Links — first 7 visible, rest in More */}
           <div className="hidden lg:flex items-center gap-1">
             {navLinks.slice(0, 7).map(({ href, label }) => (
               <Link
@@ -107,13 +108,6 @@ export default function Navbar() {
                     {label}
                   </Link>
                 ))}
-                <Link
-                  href="/about"
-                  className="flex items-center gap-2 px-4 py-2.5 text-sm text-[var(--text-2)] hover:text-[var(--text-1)] hover:bg-[var(--surface)] transition-colors"
-                >
-                  <Users size={14} />
-                  About
-                </Link>
               </div>
             </div>
           </div>
@@ -246,14 +240,6 @@ export default function Navbar() {
                 {label}
               </Link>
             ))}
-            <Link
-              href="/about"
-              onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-[var(--text-2)] hover:text-[var(--text-1)] hover:bg-[var(--card)] transition-colors"
-            >
-              <Users size={16} />
-              About
-            </Link>
           </div>
         </div>
       )}

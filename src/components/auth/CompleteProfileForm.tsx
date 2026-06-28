@@ -11,9 +11,7 @@ import { User, Camera, Upload } from "lucide-react";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import { completeProfileSchema, type CompleteProfileInput } from "@/lib/validators/user.schema";
-import { DEGREE_PROGRAMMES } from "@/lib/constants/degrees";
-
-const SEMESTERS = Array.from({ length: 12 }, (_, i) => i + 1);
+import { DEGREE_PROGRAMMES, maxSemesterForDegree } from "@/lib/constants/degrees";
 
 const GENDER_OPTIONS = [
   { value: "male", label: "Male" },
@@ -32,8 +30,14 @@ export default function CompleteProfileForm() {
   const {
     register,
     handleSubmit,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm<CompleteProfileInput>({ resolver: zodResolver(completeProfileSchema) });
+
+  const selectedDegree = watch("degreeProgramme") ?? "";
+  const maxSem = selectedDegree ? maxSemesterForDegree(selectedDegree) : 8;
+  const SEMESTERS = Array.from({ length: maxSem }, (_, i) => i + 1);
 
   function handlePhotoSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -206,9 +210,32 @@ export default function CompleteProfileForm() {
         )}
       </div>
 
-      {/* Semester + Degree in a grid */}
+      {/* Degree + Semester in a grid — degree first so semester options update */}
       <div className="grid grid-cols-2 gap-4">
-        {/* Semester */}
+        {/* Degree */}
+        <div>
+          <label className="block text-sm font-medium text-[var(--text-2)] mb-1.5">
+            Degree Programme <span className="text-[var(--danger)]">*</span>
+          </label>
+          <select
+            className="w-full px-3 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--text-1)] text-sm focus:outline-none focus:border-[var(--primary)] transition-colors"
+            {...register("degreeProgramme", {
+              onChange: () => setValue("semester", 0 as never),
+            })}
+          >
+            <option value="">Select</option>
+            {DEGREE_PROGRAMMES.map((d) => (
+              <option key={d} value={d}>
+                {d}
+              </option>
+            ))}
+          </select>
+          {errors.degreeProgramme && (
+            <p className="mt-1 text-xs text-[var(--danger)]">{errors.degreeProgramme.message}</p>
+          )}
+        </div>
+
+        {/* Semester — options depend on degree level */}
         <div>
           <label className="block text-sm font-medium text-[var(--text-2)] mb-1.5">
             Semester <span className="text-[var(--danger)]">*</span>
@@ -220,33 +247,12 @@ export default function CompleteProfileForm() {
             <option value="">Select</option>
             {SEMESTERS.map((s) => (
               <option key={s} value={s}>
-                {s}
+                Semester {s}
               </option>
             ))}
           </select>
           {errors.semester && (
             <p className="mt-1 text-xs text-[var(--danger)]">{errors.semester.message}</p>
-          )}
-        </div>
-
-        {/* Degree */}
-        <div>
-          <label className="block text-sm font-medium text-[var(--text-2)] mb-1.5">
-            Degree Programme <span className="text-[var(--danger)]">*</span>
-          </label>
-          <select
-            className="w-full px-3 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--text-1)] text-sm focus:outline-none focus:border-[var(--primary)] transition-colors"
-            {...register("degreeProgramme")}
-          >
-            <option value="">Select</option>
-            {DEGREE_PROGRAMMES.map((d) => (
-              <option key={d} value={d}>
-                {d}
-              </option>
-            ))}
-          </select>
-          {errors.degreeProgramme && (
-            <p className="mt-1 text-xs text-[var(--danger)]">{errors.degreeProgramme.message}</p>
           )}
         </div>
       </div>

@@ -27,7 +27,7 @@ export const completeProfileSchema = z.object({
   pubgId: z.string().min(1, "PUBG ID is required").max(50),
   pubgName: z.string().min(1, "PUBG name is required").max(50),
   gender: z.enum(["male", "female", "other"]),
-  semester: z.number().int().min(1).max(12),
+  semester: z.number().int().min(1).max(8),
   degreeProgramme: z.string().min(1, "Degree programme is required"),
   photo: z.string().optional(),
   whatsapp: z
