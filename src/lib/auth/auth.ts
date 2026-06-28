@@ -149,15 +149,6 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
 
       return token;
     },
-    async session({ session, token }) {
-      session.user.id = token.id as string;
-      session.user.role = token.role as "player" | "admin" | "super_admin";
-      session.user.permissions = (token.permissions as string[]) ?? [];
-      session.user.profileCompleted = token.profileCompleted as boolean;
-      session.user.isEmailVerified = token.isEmailVerified as boolean;
-      session.user.teamId = token.teamId as string | undefined;
-      session.user.isTeamLeader = token.isTeamLeader as boolean | undefined;
-      return session;
-    },
+    // session callback is defined in auth.config.ts so proxy.ts (edge middleware) can also use it
   },
 });

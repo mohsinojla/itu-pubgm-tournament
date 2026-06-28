@@ -25,6 +25,20 @@ export const authConfig: NextAuthConfig = {
     error: "/login",
   },
   callbacks: {
+    // session callback must live here too so proxy.ts (which uses only authConfig)
+    // can read custom token fields (role, permissions, etc.) from auth.user
+    session({ session, token }) {
+      if (token) {
+        session.user.id = token.id as string;
+        session.user.role = (token.role as "player" | "admin" | "super_admin") ?? "player";
+        session.user.permissions = (token.permissions as string[]) ?? [];
+        session.user.profileCompleted = (token.profileCompleted as boolean) ?? false;
+        session.user.isEmailVerified = (token.isEmailVerified as boolean) ?? false;
+        session.user.teamId = token.teamId as string | undefined;
+        session.user.isTeamLeader = token.isTeamLeader as boolean | undefined;
+      }
+      return session;
+    },
     authorized({ auth, request }) {
       const { pathname } = request.nextUrl;
       const user = auth?.user as (NonNullable<typeof auth>["user"]) & {
