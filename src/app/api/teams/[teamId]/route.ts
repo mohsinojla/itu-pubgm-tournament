@@ -45,7 +45,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ te
   }
 
   const body = await request.json();
-  const allowed = ["name", "tag", "logo"];
+  // isRegistered can only be toggled by admins, not by team leaders
+  const leaderAllowed = ["name", "tag", "logo"];
+  const adminAllowed = [...leaderAllowed, "isRegistered"];
+  const allowed = isAdmin ? adminAllowed : leaderAllowed;
   const updates: Record<string, unknown> = {};
   for (const key of allowed) {
     if (body[key] !== undefined) updates[key] = body[key];

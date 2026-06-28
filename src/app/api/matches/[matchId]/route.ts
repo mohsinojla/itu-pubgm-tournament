@@ -38,7 +38,7 @@ export async function PATCH(
     await connectDB();
     const { matchId } = await params;
     const body = await req.json();
-    const { scheduledAt, status, map, teams, groupName } = body;
+    const { scheduledAt, status, map, teams, groupName, matchNumber, stage } = body;
 
     const update: Record<string, unknown> = {};
     if (scheduledAt !== undefined) update.scheduledAt = scheduledAt ? new Date(scheduledAt) : null;
@@ -46,6 +46,8 @@ export async function PATCH(
     if (map !== undefined) update.map = map;
     if (teams !== undefined) update.teams = teams;
     if (groupName !== undefined) update.groupName = groupName;
+    if (matchNumber !== undefined) update.matchNumber = Number(matchNumber);
+    if (stage !== undefined) update.stage = stage;
 
     const match = await Match.findByIdAndUpdate(matchId, update, { new: true })
       .populate("teams", "name tag logo");

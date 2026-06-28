@@ -3,6 +3,8 @@ import User from "@/lib/db/models/User";
 import Team from "@/lib/db/models/Team";
 import Announcement from "@/lib/db/models/Announcement";
 import { auth } from "@/lib/auth/auth";
+import { isSuperAdmin, hasPermission } from "@/lib/auth/permissions";
+import { PERMISSIONS } from "@/lib/constants/permissions";
 import Link from "next/link";
 import { Users, UsersRound, Megaphone, Shield } from "lucide-react";
 
@@ -21,6 +23,7 @@ async function getStats() {
 
 export default async function AdminDashboard() {
   const [session, stats] = await Promise.all([auth(), getStats()]);
+  const user = session!.user;
 
   return (
     <div>
@@ -31,60 +34,103 @@ export default async function AdminDashboard() {
 
       {/* Stats cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        {(isSuperAdmin(user) || hasPermission(user, PERMISSIONS.MANAGE_PLAYERS)) && (
+          <StatCard
+            href="/admin/players"
+            icon={<Users size={22} className="text-[var(--primary)]" />}
+            label="Registered Players"
+            value={stats.players}
+            sub={stats.unverified > 0 ? `${stats.unverified} unverified` : "All verified"}
+          />
+        )}
+        {(isSuperAdmin(user) || hasPermission(user, PERMISSIONS.MANAGE_TEAMS)) && (
+          <StatCard
+            href="/admin/teams"
+            icon={<UsersRound size={22} className="text-[var(--primary)]" />}
+            label="Teams"
+            value={stats.teams}
+            sub="Active teams"
+          />
+        )}
+        {(isSuperAdmin(user) || hasPermission(user, PERMISSIONS.POST_ANNOUNCEMENTS)) && (
+          <StatCard
+            href="/admin/announcements"
+            icon={<Megaphone size={22} className="text-[var(--primary)]" />}
+            label="Announcements"
+            value={stats.announcements}
+            sub="Total posted"
+          />
+        )}
         <StatCard
-          href="/admin/players"
-          icon={<Users size={22} className="text-[var(--primary)]" />}
-          label="Registered Players"
-          value={stats.players}
-          sub={stats.unverified > 0 ? `${stats.unverified} unverified` : "All verified"}
-        />
-        <StatCard
-          href="/admin/teams"
-          icon={<UsersRound size={22} className="text-[var(--primary)]" />}
-          label="Teams"
-          value={stats.teams}
-          sub="Active teams"
-        />
-        <StatCard
-          href="/admin/announcements"
-          icon={<Megaphone size={22} className="text-[var(--primary)]" />}
-          label="Announcements"
-          value={stats.announcements}
-          sub="Total posted"
-        />
-        <StatCard
-          href="/admin/admins"
+          href={isSuperAdmin(user) ? "/admin/admins" : "/admin"}
           icon={<Shield size={22} className="text-[var(--primary)]" />}
           label="Admin Access"
           value="Active"
-          sub={session?.user?.role === "super_admin" ? "Super Admin" : "Admin"}
+          sub={user.role === "super_admin" ? "Super Admin" : "Admin"}
           isText
         />
       </div>
 
-      {/* Quick links */}
-      <div className="game-card p-6">
-        <h2 className="font-heading font-bold text-lg mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {[
-            { href: "/admin/announcements", label: "Post Announcement", desc: "Share news with all players" },
-            { href: "/admin/schedule", label: "Manage Schedule", desc: "Add or update match times" },
-            { href: "/admin/results", label: "Post Results", desc: "Update match results & stats" },
-            { href: "/admin/gallery", label: "Upload Media", desc: "Add photos or videos" },
-            { href: "/admin/players", label: "Manage Players", desc: "Edit, verify, or remove players" },
-            { href: "/admin/rules", label: "Edit Rules", desc: "Update tournament rules" },
-          ].map((action) => (
-            <Link
-              key={action.href}
-              href={action.href}
-              className="p-4 rounded-xl border border-[var(--border)] hover:border-[var(--primary-dim)] transition-colors"
-            >
-              <p className="font-medium text-sm">{action.label}</p>
-              <p className="text-xs text-[var(--text-2)] mt-0.5">{action.desc}</p>
-            </Link>
-          ))}
-        </div>
-      </div>
+      {/* Quick links — only shown if the admin has the relevant permission */}
+      {(() => {
+        const actions = [
+          {
+            href: "/admin/announcements",
+            label: "Post Announcement",
+            desc: "Share news with all players",
+            show: isSuperAdmin(user) || hasPermission(user, PERMISSIONS.POST_ANNOUNCEMENTS),
+          },
+          {
+            href: "/admin/schedule",
+            label: "Manage Schedule",
+            desc: "Add or update match times",
+            show: isSuperAdmin(user) || hasPermission(user, PERMISSIONS.MANAGE_SCHEDULE),
+          },
+          {
+            href: "/admin/results",
+            label: "Post Results",
+            desc: "Update match results & stats",
+            show: isSuperAdmin(user) || hasPermission(user, PERMISSIONS.MANAGE_RESULTS),
+          },
+          {
+            href: "/admin/gallery",
+            label: "Upload Media",
+            desc: "Add photos or videos",
+            show: isSuperAdmin(user) || hasPermission(user, PERMISSIONS.MANAGE_GALLERY),
+          },
+          {
+            href: "/admin/players",
+            label: "Manage Players",
+            desc: "Edit, verify, or remove players",
+            show: isSuperAdmin(user) || hasPermission(user, PERMISSIONS.MANAGE_PLAYERS),
+          },
+          {
+            href: "/admin/rules",
+            label: "Edit Rules",
+            desc: "Update tournament rules",
+            show: isSuperAdmin(user) || hasPermission(user, PERMISSIONS.POST_ANNOUNCEMENTS),
+          },
+        ].filter((a) => a.show);
+
+        if (actions.length === 0) return null;
+        return (
+          <div className="game-card p-6">
+            <h2 className="font-heading font-bold text-lg mb-4">Quick Actions</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {actions.map((action) => (
+                <Link
+                  key={action.href}
+                  href={action.href}
+                  className="p-4 rounded-xl border border-[var(--border)] hover:border-[var(--primary-dim)] transition-colors"
+                >
+                  <p className="font-medium text-sm">{action.label}</p>
+                  <p className="text-xs text-[var(--text-2)] mt-0.5">{action.desc}</p>
+                </Link>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }

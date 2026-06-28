@@ -16,7 +16,7 @@ export default async function AdminPlayersPage() {
   if (!hasAccess) redirect("/admin");
 
   await connectDB();
-  const players = await User.find({ profileCompleted: true })
+  const players = await User.find({ profileCompleted: true, role: "player" })
     .sort({ createdAt: -1 })
     .select("-password")
     .lean();

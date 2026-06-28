@@ -55,10 +55,21 @@ export async function DELETE(
   }
 
   const { userId } = await params;
+
+  // Cannot delete yourself
+  if (userId === session.user.id) {
+    return NextResponse.json({ success: false, error: "Cannot delete your own account" }, { status: 400 });
+  }
+
   await connectDB();
 
   const user = await User.findById(userId);
   if (!user) return NextResponse.json({ success: false, error: "User not found" }, { status: 404 });
+
+  // Only super_admin can delete another super_admin (and even then it's guarded above for self)
+  if (user.role === "super_admin") {
+    return NextResponse.json({ success: false, error: "Cannot delete the super admin account" }, { status: 403 });
+  }
 
   // Remove from team
   if (user.teamId) {

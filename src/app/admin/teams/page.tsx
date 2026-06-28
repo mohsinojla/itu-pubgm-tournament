@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth/auth";
 import { redirect } from "next/navigation";
-import { hasPermission } from "@/lib/auth/permissions";
+import { hasPermission, isSuperAdmin } from "@/lib/auth/permissions";
 import { PERMISSIONS } from "@/lib/constants/permissions";
 import { connectDB } from "@/lib/db/mongoose";
 import Team from "@/lib/db/models/Team";
@@ -10,7 +10,8 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminTeamsPage() {
   const session = await auth();
-  if (!session?.user?.id || !hasPermission(session.user, PERMISSIONS.MANAGE_TEAMS)) {
+  const canManage = isSuperAdmin(session?.user) || hasPermission(session?.user, PERMISSIONS.MANAGE_TEAMS);
+  if (!session?.user?.id || !canManage) {
     redirect("/admin");
   }
 
