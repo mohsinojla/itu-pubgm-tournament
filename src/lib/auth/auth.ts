@@ -58,18 +58,18 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
   callbacks: {
     ...authConfig.callbacks,
     async signIn({ user, account }) {
-      // Google OAuth — create user if new
+      // Google OAuth — create or update user
       if (account?.provider === "google") {
         await connectDB();
 
+        const email = user.email!.toLowerCase();
+        const isSuperAdmin = email === SUPER_ADMIN_EMAIL;
+
         const existing = await User.findOne({
-          $or: [{ googleId: account.providerAccountId }, { email: user.email }],
+          $or: [{ googleId: account.providerAccountId }, { email }],
         });
 
         if (!existing) {
-          const email = user.email!.toLowerCase();
-          const isSuperAdmin = email === SUPER_ADMIN_EMAIL;
-
           await User.create({
             email,
             googleId: account.providerAccountId,
@@ -77,13 +77,22 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
             name: user.name ?? undefined,
             photo: user.image ?? undefined,
             isEmailVerified: true,
-            profileCompleted: false,
+            profileCompleted: isSuperAdmin,
             role: isSuperAdmin ? "super_admin" : "player",
             permissions: [],
           });
-        } else if (!existing.googleId) {
-          existing.googleId = account.providerAccountId;
-          await existing.save();
+        } else {
+          // Always fix super admin role if it was wrong, and update googleId if missing
+          const updates: Record<string, unknown> = {};
+          if (!existing.googleId) updates.googleId = account.providerAccountId;
+          if (isSuperAdmin && existing.role !== "super_admin") {
+            updates.role = "super_admin";
+            updates.isEmailVerified = true;
+            updates.profileCompleted = true;
+          }
+          if (Object.keys(updates).length > 0) {
+            await User.updateOne({ _id: existing._id }, { $set: updates });
+          }
         }
       }
       return true;
@@ -93,7 +102,15 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         // Initial sign in — user object is from authorize or OAuth profile
         if (account?.provider === "google") {
           await connectDB();
-          const dbUser = await User.findOne({ email: token.email });
+          const email = (token.email ?? "").toLowerCase();
+          // Ensure super admin always has correct role in DB before reading
+          if (email === SUPER_ADMIN_EMAIL) {
+            await User.updateOne(
+              { email, role: { $ne: "super_admin" } },
+              { $set: { role: "super_admin", profileCompleted: true, isEmailVerified: true } }
+            );
+          }
+          const dbUser = await User.findOne({ email });
           if (dbUser) {
             token.id = dbUser._id.toString();
             token.role = dbUser.role;

@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Users, UsersRound, Calendar, Trophy,
   BarChart2, Images, Megaphone, BookOpen, UserCog,
-  Info, Shield,
+  Info, Shield, Heart,
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { PERMISSIONS } from "@/lib/constants/permissions";
@@ -33,6 +33,7 @@ const NAV_ITEMS = [
   { href: "/admin/gallery", label: "Gallery", icon: Images, permission: PERMISSIONS.MANAGE_GALLERY },
   { href: "/admin/announcements", label: "Announcements", icon: Megaphone, permission: PERMISSIONS.POST_ANNOUNCEMENTS },
   { href: "/admin/rules", label: "Rules", icon: BookOpen, permission: PERMISSIONS.POST_ANNOUNCEMENTS },
+  { href: "/admin/community", label: "Community", icon: Heart, permission: null, superAdminOnly: true },
   { href: "/admin/about", label: "About Page", icon: Info, permission: null, superAdminOnly: true },
   { href: "/admin/admins", label: "Admins", icon: UserCog, permission: null, superAdminOnly: true },
 ];
