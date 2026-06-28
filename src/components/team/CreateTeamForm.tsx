@@ -11,6 +11,7 @@ import { Users, Upload } from "lucide-react";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import { createTeamSchema, type CreateTeamInput } from "@/lib/validators/team.schema";
+import { compressImage } from "@/lib/utils/compress";
 
 export default function CreateTeamForm() {
   const router = useRouter();
@@ -34,6 +35,7 @@ export default function CreateTeamForm() {
 
   async function uploadLogo(): Promise<string | null> {
     if (!logoFile) return null;
+    const compressed = await compressImage(logoFile, 200);
     const sigRes = await fetch("/api/upload", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -42,7 +44,7 @@ export default function CreateTeamForm() {
     const sigData = await sigRes.json();
     if (!sigData.signature) throw new Error("Upload signature failed");
     const formData = new FormData();
-    formData.append("file", logoFile);
+    formData.append("file", compressed);
     formData.append("api_key", sigData.apiKey);
     formData.append("timestamp", sigData.timestamp.toString());
     formData.append("signature", sigData.signature);

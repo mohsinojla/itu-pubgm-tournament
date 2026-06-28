@@ -12,6 +12,7 @@ import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import { completeProfileSchema, type CompleteProfileInput } from "@/lib/validators/user.schema";
 import { DEGREE_PROGRAMMES, maxSemesterForDegree } from "@/lib/constants/degrees";
+import { compressImage } from "@/lib/utils/compress";
 
 const GENDER_OPTIONS = [
   { value: "male", label: "Male" },
@@ -53,6 +54,8 @@ export default function CompleteProfileForm() {
   async function uploadPhoto(): Promise<string | null> {
     if (!photoFile) return null;
 
+    const compressed = await compressImage(photoFile, 200);
+
     // Get signed upload params from server
     const sigRes = await fetch("/api/upload", {
       method: "POST",
@@ -63,7 +66,7 @@ export default function CompleteProfileForm() {
     if (!sigData.signature) throw new Error("Failed to get upload signature");
 
     const formData = new FormData();
-    formData.append("file", photoFile);
+    formData.append("file", compressed);
     formData.append("api_key", sigData.apiKey);
     formData.append("timestamp", sigData.timestamp);
     formData.append("signature", sigData.signature);

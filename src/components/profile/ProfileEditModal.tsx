@@ -11,6 +11,7 @@ import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import { completeProfileSchema, type CompleteProfileInput } from "@/lib/validators/user.schema";
 import { DEGREE_PROGRAMMES, maxSemesterForDegree } from "@/lib/constants/degrees";
+import { compressImage } from "@/lib/utils/compress";
 
 interface Props {
   open: boolean;
@@ -64,6 +65,7 @@ export default function ProfileEditModal({ open, onClose, user }: Props) {
 
   async function uploadPhoto(): Promise<string | null> {
     if (!photoFile) return null;
+    const compressed = await compressImage(photoFile, 200);
     const sigRes = await fetch("/api/upload", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -72,7 +74,7 @@ export default function ProfileEditModal({ open, onClose, user }: Props) {
     const sigData = await sigRes.json();
     if (!sigData.signature) throw new Error("Signature failed");
     const formData = new FormData();
-    formData.append("file", photoFile);
+    formData.append("file", compressed);
     formData.append("api_key", sigData.apiKey);
     formData.append("timestamp", sigData.timestamp);
     formData.append("signature", sigData.signature);
