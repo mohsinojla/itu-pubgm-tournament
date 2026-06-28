@@ -173,8 +173,7 @@ export default function CompleteProfileForm() {
         label="PUBG Mobile ID"
         placeholder="Your numeric PUBG ID"
         error={errors.pubgId?.message}
-        hint="Enter your PUBG Mobile UID (found in your profile)"
-        required
+        hint="Optional now — but required before creating or joining a team"
         {...register("pubgId")}
       />
 
@@ -183,7 +182,7 @@ export default function CompleteProfileForm() {
         label="PUBG In-Game Name"
         placeholder="YourGamertag"
         error={errors.pubgName?.message}
-        required
+        hint="Optional now — but required before creating or joining a team"
         {...register("pubgName")}
       />
 

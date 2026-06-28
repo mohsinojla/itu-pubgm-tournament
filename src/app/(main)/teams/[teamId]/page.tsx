@@ -17,13 +17,30 @@ export default async function TeamDetailPage({
   const [session] = await Promise.all([auth(), connectDB()]);
 
   const team = await Team.findById(teamId)
-    .populate("leaderId", "name photo pubgName isVerifiedPlayer _id")
-    .populate("members.userId", "name photo pubgName isVerifiedPlayer rollNumber _id")
+    .populate("leaderId", "name photo pubgName isVerifiedPlayer _id whatsapp")
+    .populate("members.userId", "name photo pubgName isVerifiedPlayer rollNumber _id whatsapp")
     .lean();
 
   if (!team) notFound();
 
   const teamJson = JSON.parse(JSON.stringify(team));
+
+  // Determine if the viewer is a team member
+  const viewerIsTeamMember =
+    !!session?.user?.id &&
+    teamJson.members.some(
+      (m: { userId: { _id: string } }) => m.userId._id === session!.user.id
+    );
+
+  // Non-members can only see the leader's WhatsApp. Strip from other members.
+  if (!viewerIsTeamMember) {
+    teamJson.members = teamJson.members.map(
+      (m: { userId: Record<string, unknown>; role: string; joinedAt: string }) =>
+        m.userId._id === teamJson.leaderId._id
+          ? m
+          : { ...m, userId: { ...m.userId, whatsapp: undefined } }
+    );
+  }
 
   // Fetch join requests if current user is the leader
   let joinRequests: unknown[] = [];

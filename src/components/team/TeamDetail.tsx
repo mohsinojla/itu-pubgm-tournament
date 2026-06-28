@@ -7,7 +7,7 @@ import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import {
   Users, Shield, Share2, UserPlus, Check, X,
-  ChevronRight, Crown, UserMinus, LogOut, Trash2,
+  ChevronRight, Crown, UserMinus, LogOut, Trash2, Phone,
 } from "lucide-react";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
@@ -21,6 +21,7 @@ interface Member {
     pubgName?: string;
     rollNumber?: string;
     isVerifiedPlayer?: boolean;
+    whatsapp?: string;
   };
   role: "core" | "substitute";
   joinedAt: string;
@@ -45,7 +46,7 @@ interface Team {
   name: string;
   tag: string;
   logo?: string;
-  leaderId: { _id: string; name?: string; photo?: string; pubgName?: string };
+  leaderId: { _id: string; name?: string; photo?: string; pubgName?: string; whatsapp?: string };
   members: Member[];
   isRegistered?: boolean;
   wins?: number;
@@ -289,6 +290,20 @@ export default function TeamDetail({ team, currentUserId, joinRequests, myPendin
                     {m.userId.isVerifiedPlayer && <Shield size={12} className="text-[var(--success)] shrink-0" />}
                   </div>
                   <p className="text-xs text-[var(--text-2)] font-mono">{m.userId.pubgName ?? "—"}</p>
+                  {m.userId.whatsapp && (
+                    <a
+                      href={`https://wa.me/92${m.userId.whatsapp.replace(/^0/, "")}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-[10px] text-[var(--success)] hover:underline mt-0.5"
+                    >
+                      <Phone size={9} />
+                      {m.userId.whatsapp}
+                      {isCurrentLeader && (
+                        <span className="text-[var(--text-2)] ml-1">(leader)</span>
+                      )}
+                    </a>
+                  )}
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge variant={m.role === "core" ? "blue" : "default"} className="text-[10px]">

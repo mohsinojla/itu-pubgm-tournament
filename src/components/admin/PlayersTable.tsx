@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import { Shield, EyeOff, Eye, Trash2, ExternalLink, Search } from "lucide-react";
+import { Shield, EyeOff, Eye, Trash2, ExternalLink, Search, Download } from "lucide-react";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 
@@ -30,6 +30,26 @@ export default function PlayersTable({ players }: { players: Player[] }) {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState<string | null>(null);
+  const [exporting, setExporting] = useState(false);
+
+  async function handleExport() {
+    setExporting(true);
+    try {
+      const res = await fetch("/api/admin/export/players-teams");
+      if (!res.ok) { toast.error("Export failed"); return; }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `ITU-PUBGM-Players-${new Date().toISOString().slice(0, 10)}.xlsx`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      toast.error("Export failed");
+    } finally {
+      setExporting(false);
+    }
+  }
 
   const filtered = players.filter((p) => {
     const q = search.toLowerCase();
@@ -72,16 +92,27 @@ export default function PlayersTable({ players }: { players: Player[] }) {
 
   return (
     <div className="space-y-4">
-      {/* Search */}
-      <div className="relative">
-        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-2)]" />
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search by name, email, PUBG name, roll number..."
-          className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-sm focus:outline-none focus:border-[var(--primary)] transition-colors"
-        />
+      {/* Search + Export */}
+      <div className="flex gap-3 items-center">
+        <div className="relative flex-1">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-2)]" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by name, email, PUBG name, roll number..."
+            className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-sm focus:outline-none focus:border-[var(--primary)] transition-colors"
+          />
+        </div>
+        <button
+          onClick={handleExport}
+          disabled={exporting}
+          title="Export players with teams to Excel"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-sm hover:border-[var(--primary)]/50 hover:text-[var(--primary)] transition-colors disabled:opacity-50 shrink-0"
+        >
+          <Download size={14} />
+          {exporting ? "Exporting…" : "Export Excel"}
+        </button>
       </div>
 
       <p className="text-xs text-[var(--text-2)]">{filtered.length} player{filtered.length !== 1 ? "s" : ""}</p>

@@ -49,8 +49,17 @@ export async function POST(request: Request) {
 
     await connectDB();
 
+    // Check user has PUBG ID and PUBG name set
+    const currentUser = await User.findById(session.user.id).select("teamId pubgId pubgName");
+    if (!currentUser?.pubgId || !currentUser?.pubgName) {
+      return NextResponse.json(
+        { success: false, error: "You must set your PUBG ID and PUBG In-Game Name in your profile before creating a team." },
+        { status: 400 }
+      );
+    }
+
     // Check user doesn't already have a team
-    const existingUser = await User.findById(session.user.id).select("teamId");
+    const existingUser = currentUser;
     if (existingUser?.teamId) {
       return NextResponse.json(
         { success: false, error: "You are already in a team. Leave your current team first." },
