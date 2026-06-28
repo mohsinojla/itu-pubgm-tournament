@@ -3,5 +3,6 @@
     "src/app/api/**": {
       "maxDuration": 30
     }
-  }
+  },
+  "alias": ["itu-pubgm-tournament.vercel.app"]
 }
