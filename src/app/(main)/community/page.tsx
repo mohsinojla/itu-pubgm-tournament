@@ -1,5 +1,5 @@
 import PageHero from "@/components/common/PageHero";
-import { Users, Instagram, MessageCircle } from "lucide-react";
+import { Users, Camera, MessageCircle } from "lucide-react";
 
 export default function CommunityPage() {
   return (
@@ -58,7 +58,7 @@ export default function CommunityPage() {
               rel="noopener noreferrer"
               className="flex items-center gap-3 px-5 py-3 rounded-xl border border-[var(--border)] hover:border-[var(--primary)]/50 hover:text-[var(--primary)] transition-colors text-sm font-medium"
             >
-              <Instagram size={18} />
+              <Camera size={18} />
               @itupubgmcommunity
             </a>
             <a
