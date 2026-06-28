@@ -10,10 +10,9 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminTeamsPage() {
   const session = await auth();
-  const canManage = isSuperAdmin(session?.user) || hasPermission(session?.user, PERMISSIONS.MANAGE_TEAMS);
-  if (!session?.user?.id || !canManage) {
-    redirect("/admin");
-  }
+  if (!session?.user?.id) redirect("/admin");
+  const canManage = isSuperAdmin(session.user) || hasPermission(session.user, PERMISSIONS.MANAGE_TEAMS);
+  if (!canManage) redirect("/admin");
 
   await connectDB();
   const teams = await Team.find()
