@@ -251,6 +251,16 @@ export default function CompleteProfileForm() {
         </div>
       </div>
 
+      {/* WhatsApp */}
+      <Input
+        label="WhatsApp Number"
+        placeholder="03001234567"
+        error={errors.whatsapp?.message}
+        hint="Used to add you to the tournament WhatsApp group"
+        required
+        {...register("whatsapp")}
+      />
+
       <Button type="submit" className="w-full" size="lg" loading={submitting}>
         Complete Registration
       </Button>

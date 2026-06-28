@@ -30,6 +30,10 @@ export const completeProfileSchema = z.object({
   semester: z.number().int().min(1).max(12),
   degreeProgramme: z.string().min(1, "Degree programme is required"),
   photo: z.string().optional(),
+  whatsapp: z
+    .string()
+    .regex(/^(\+92|0)3[0-9]{9}$/, "Enter a valid Pakistani number e.g. 03001234567")
+    .or(z.literal("")),
 });
 
 export const otpSchema = z.object({

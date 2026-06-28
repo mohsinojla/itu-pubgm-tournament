@@ -16,6 +16,7 @@ export interface IUser extends Document {
   semester?: number;
   degreeProgramme?: string;
   photo?: string;
+  whatsapp?: string;
   isVerifiedPlayer: boolean;
   role: "player" | "admin" | "super_admin";
   permissions: string[];
@@ -53,6 +54,7 @@ const UserSchema = new Schema<IUser>(
     semester: { type: Number, min: 1, max: 12 },
     degreeProgramme: { type: String },
     photo: { type: String },
+    whatsapp: { type: String, trim: true },
     isVerifiedPlayer: { type: Boolean, default: false },
     role: {
       type: String,

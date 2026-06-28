@@ -40,6 +40,7 @@ export async function PATCH(request: Request) {
       "semester",
       "degreeProgramme",
       "photo",
+      "whatsapp",
       "profileCompleted",
     ];
 
