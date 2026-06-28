@@ -1,26 +1,104 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #0a0a0f;
+  --surface: #111118;
+  --card: #1a1a2e;
+  --primary: #f2a316;
+  --primary-dim: #c89b3c;
+  --accent: #ff6b35;
+  --text-1: #ffffff;
+  --text-2: #a0a0b0;
+  --border: #2a2a3e;
+  --success: #22c55e;
+  --danger: #ef4444;
+  --warning: #f59e0b;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-card: var(--card);
+  --color-primary: var(--primary);
+  --color-primary-dim: var(--primary-dim);
+  --color-accent: var(--accent);
+  --color-text-1: var(--text-1);
+  --color-text-2: var(--text-2);
+  --color-border: var(--border);
+  --color-success: var(--success);
+  --color-danger: var(--danger);
+  --color-warning: var(--warning);
+  --font-heading: var(--font-rajdhani);
+  --font-body: var(--font-inter);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--bg);
+  color: var(--text-1);
+  font-family: var(--font-inter), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-rajdhani), system-ui, sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--surface);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-dim);
+}
+
+/* Glow utilities */
+.glow-primary {
+  box-shadow: 0 0 20px rgba(242, 163, 22, 0.3);
+}
+.glow-primary-sm {
+  box-shadow: 0 0 10px rgba(242, 163, 22, 0.2);
+}
+.text-glow {
+  text-shadow: 0 0 20px rgba(242, 163, 22, 0.5);
+}
+
+/* Gold gradient text */
+.gold-text {
+  background: linear-gradient(135deg, #f2a316, #c89b3c);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Card styles */
+.game-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.game-card:hover {
+  border-color: var(--primary-dim);
+  transition: border-color 0.2s ease;
+}
+
+/* Grid pattern background */
+.grid-bg {
+  background-image:
+    linear-gradient(rgba(242, 163, 22, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(242, 163, 22, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
 }
