@@ -82,7 +82,8 @@ export default function Footer() {
                 aria-label="Instagram"
                 className="p-2 rounded-lg bg-[var(--card)] hover:opacity-80 transition-opacity"
               >
-                <Image src="/instagram-icon.png" alt="Instagram" width={20} height={20} className="object-contain" />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/instagram-icon.png" alt="Instagram" width={20} height={20} className="object-contain" />
               </a>
               <a
                 href="https://chat.whatsapp.com/GtPjK1tFxTW4E160fsDjIX"
@@ -91,7 +92,8 @@ export default function Footer() {
                 aria-label="Join WhatsApp Group"
                 className="p-2 rounded-lg bg-[var(--card)] hover:opacity-80 transition-opacity"
               >
-                <Image src="/whatsapp-icon.png" alt="WhatsApp" width={20} height={20} className="object-contain" />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/whatsapp-icon.png" alt="WhatsApp" width={20} height={20} className="object-contain" />
               </a>
             </div>
           </div>
