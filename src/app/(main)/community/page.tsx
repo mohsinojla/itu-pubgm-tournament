@@ -117,7 +117,7 @@ export default async function CommunityPage() {
         {/* Connect */}
         <div className="game-card p-8">
           <h2 className="font-heading text-2xl font-bold mb-6">Connect With Us</h2>
-          <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex flex-col sm:flex-row flex-wrap gap-4">
             <a
               href="https://www.instagram.com/itupubgmcommunity"
               target="_blank"
@@ -137,6 +137,16 @@ export default async function CommunityPage() {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/whatsapp-icon.png" alt="WhatsApp" width={22} height={22} className="object-contain" />
               Join WhatsApp Group
+            </a>
+            <a
+              href="https://www.linkedin.com/in/mohsin-raza-aujla-bsse23040"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 px-5 py-3 rounded-xl border border-[var(--border)] hover:border-[#0077b5]/50 hover:text-[#0077b5] transition-colors text-sm font-medium"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/LinkedIn_icon.png" alt="LinkedIn" width={22} height={22} className="object-contain" />
+              Mohsin Raza Ojla
             </a>
           </div>
         </div>

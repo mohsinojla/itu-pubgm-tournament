@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import { ExternalLink, Link2, User, Plus, Trash2, Star } from "lucide-react";
+import { User, Plus, Trash2, Star } from "lucide-react";
 import Button from "@/components/ui/Button";
 
 interface TeamMember {
@@ -175,9 +175,11 @@ function MemberCard({
               href={`https://instagram.com/${member.socials.instagram}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="p-1.5 rounded-lg border border-[var(--border)] hover:border-[var(--primary-dim)] text-[var(--text-2)] hover:text-[var(--text-1)] transition-colors"
+              title="Instagram"
+              className="p-1.5 rounded-lg border border-[var(--border)] hover:border-[var(--primary-dim)] transition-colors"
             >
-              <ExternalLink size={14} />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/instagram-icon.png" alt="Instagram" width={16} height={16} className="object-contain" />
             </a>
           )}
           {member.socials.linkedin && (
@@ -185,9 +187,11 @@ function MemberCard({
               href={member.socials.linkedin}
               target="_blank"
               rel="noopener noreferrer"
-              className="p-1.5 rounded-lg border border-[var(--border)] hover:border-[var(--primary-dim)] text-[var(--text-2)] hover:text-[var(--text-1)] transition-colors"
+              title="LinkedIn"
+              className="p-1.5 rounded-lg border border-[var(--border)] hover:border-[var(--primary-dim)] transition-colors"
             >
-              <Link2 size={14} />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/LinkedIn_icon.png" alt="LinkedIn" width={16} height={16} className="object-contain" />
             </a>
           )}
         </div>
