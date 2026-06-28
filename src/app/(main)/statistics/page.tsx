@@ -8,7 +8,11 @@ export const dynamic = "force-dynamic";
 export default async function StatisticsPage() {
   await connectDB();
 
-  const users = await User.find({ profileCompleted: true })
+  const users = await User.find({
+    profileCompleted: true,
+    role: "player",
+    teamId: { $exists: true, $ne: null },
+  })
     .select("gender degreeProgramme semester")
     .lean();
 
@@ -36,7 +40,7 @@ export default async function StatisticsPage() {
 
   return (
     <>
-      <PageHero title="Community Stats" subtitle="Registration demographics at a glance" />
+      <PageHero title="Tournament Stats" subtitle="Demographics of registered team players" />
       <div className="max-w-5xl mx-auto px-4 py-10">
         <DemographicsCharts
           total={users.length}

@@ -15,7 +15,8 @@ export async function GET(req: NextRequest) {
       (isSuperAdmin(session.user) ||
         hasPermission(session.user, PERMISSIONS.VIEW_STATS));
 
-    const filter = canViewHidden ? {} : { isHidden: false };
+    const baseFilter = { teamId: { $exists: true, $ne: null } };
+    const filter = canViewHidden ? baseFilter : { ...baseFilter, isHidden: false };
 
     const stats = await PlayerStats.find(filter)
       .populate("userId", "name pubgName photo rollNumber teamId")

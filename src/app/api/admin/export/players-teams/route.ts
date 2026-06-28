@@ -19,10 +19,8 @@ export async function GET() {
 
   await connectDB();
 
-  // Fetch all players who are in a team
+  // Fetch all users who are in a team (any role — admins can participate too)
   const players = await User.find({
-    profileCompleted: true,
-    role: "player",
     teamId: { $exists: true, $ne: null },
   })
     .select("name email rollNumber pubgId pubgName degreeProgramme semester whatsapp teamId isVerifiedPlayer")

@@ -34,7 +34,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ tea
   if (!session?.user?.id) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
   }
-  if (!session.user.profileCompleted) {
+  const isPrivileged = session.user.role === "admin" || session.user.role === "super_admin";
+  if (!isPrivileged && !session.user.profileCompleted) {
     return NextResponse.json({ success: false, error: "Complete your profile first" }, { status: 403 });
   }
 

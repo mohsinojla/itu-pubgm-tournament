@@ -95,6 +95,16 @@ export default function Footer() {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="/whatsapp-icon.png" alt="WhatsApp" width={20} height={20} className="object-contain" />
               </a>
+              <a
+                href="https://www.linkedin.com/in/mohsin-raza-aujla-bsse23040"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="LinkedIn"
+                className="p-2 rounded-lg bg-[var(--card)] hover:opacity-80 transition-opacity"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/LinkedIn_icon.png" alt="LinkedIn" width={20} height={20} className="object-contain" />
+              </a>
             </div>
           </div>
         </div>
