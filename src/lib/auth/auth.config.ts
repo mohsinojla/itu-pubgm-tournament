@@ -5,6 +5,7 @@ import Google from "next-auth/providers/google";
 // Edge-safe config — NO Mongoose/Node.js-only imports here
 // This file is imported by middleware.ts which runs on the Edge runtime
 export const authConfig: NextAuthConfig = {
+  trustHost: true,
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,

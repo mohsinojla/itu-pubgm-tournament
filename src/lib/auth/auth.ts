@@ -10,6 +10,7 @@ const SUPER_ADMIN_EMAIL = "mohsinrazaojla32@gmail.com";
 
 export const { auth, handlers, signIn, signOut } = NextAuth({
   ...authConfig,
+  trustHost: true,
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,
