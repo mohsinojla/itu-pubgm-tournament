@@ -91,6 +91,14 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ team
     return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
   }
 
+  // Leaders can only delete empty teams (just themselves); admins can delete any time
+  if (isLeader && !isAdmin && team.members.length > 1) {
+    return NextResponse.json(
+      { success: false, error: "Remove all other members before deleting the team" },
+      { status: 400 }
+    );
+  }
+
   // Remove team reference from all members
   const memberIds = team.members.map((m: { userId: { toString: () => string } }) => m.userId.toString());
   await User.updateMany(

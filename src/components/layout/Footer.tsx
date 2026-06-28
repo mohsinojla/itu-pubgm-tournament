@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { ExternalLink, MessageCircle, Camera } from "lucide-react";
+import { MessageCircle, Camera } from "lucide-react";
 
 export default function Footer() {
   const year = new Date().getFullYear();
@@ -78,25 +78,22 @@ export default function Footer() {
             </p>
             <div className="flex items-center gap-3">
               <a
-                href="#"
+                href="https://www.instagram.com/itupubgmcommunity"
+                target="_blank"
+                rel="noopener noreferrer"
                 aria-label="Instagram"
                 className="p-2 rounded-lg bg-[var(--card)] hover:text-[var(--primary)] transition-colors"
               >
                 <Camera size={16} />
               </a>
               <a
-                href="#"
-                aria-label="WhatsApp"
+                href="https://chat.whatsapp.com/GtPjK1tFxTW4E160fsDjIX"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Join WhatsApp Group"
                 className="p-2 rounded-lg bg-[var(--card)] hover:text-[var(--primary)] transition-colors"
               >
                 <MessageCircle size={16} />
-              </a>
-              <a
-                href="#"
-                aria-label="GitHub"
-                className="p-2 rounded-lg bg-[var(--card)] hover:text-[var(--primary)] transition-colors"
-              >
-                <ExternalLink size={16} />
               </a>
             </div>
           </div>

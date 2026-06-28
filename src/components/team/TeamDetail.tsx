@@ -6,8 +6,8 @@ import Link from "next/link";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import {
-  Users, Star, Shield, Share2, UserPlus, Check, X,
-  ChevronRight, Crown, UserMinus,
+  Users, Shield, Share2, UserPlus, Check, X,
+  ChevronRight, Crown, UserMinus, LogOut, Trash2,
 } from "lucide-react";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
@@ -71,6 +71,8 @@ export default function TeamDetail({ team, currentUserId, joinRequests, myPendin
   const [transferTarget, setTransferTarget] = useState("");
   const [showTransfer, setShowTransfer] = useState(false);
   const [removingMember, setRemovingMember] = useState<string | null>(null);
+  const [leaving, setLeaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const isLeader = currentUserId === team.leaderId._id;
   const isMember = team.members.some((m) => m.userId._id === currentUserId);
@@ -156,6 +158,52 @@ export default function TeamDetail({ team, currentUserId, joinRequests, myPendin
       }
     } finally {
       setRemovingMember(null);
+    }
+  }
+
+  async function handleLeave() {
+    const msg = isLeader
+      ? team.members.length === 1
+        ? "You are the only member. Leaving will delete the team permanently."
+        : "As leader, leaving will automatically transfer leadership to another member."
+      : "Are you sure you want to leave this team?";
+    if (!confirm(msg)) return;
+
+    setLeaving(true);
+    try {
+      const res = await fetch(`/api/teams/${team._id}/leave`, { method: "POST" });
+      const data = await res.json();
+      if (data.success) {
+        toast.success(data.teamDeleted ? "Team deleted — you have left." : "You have left the team.");
+        router.push("/teams");
+        router.refresh();
+      } else {
+        toast.error(data.error ?? "Failed to leave team");
+      }
+    } catch {
+      toast.error("Something went wrong");
+    } finally {
+      setLeaving(false);
+    }
+  }
+
+  async function handleDelete() {
+    if (!confirm("Delete this team permanently? This cannot be undone.")) return;
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/teams/${team._id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (data.success) {
+        toast.success("Team deleted.");
+        router.push("/teams");
+        router.refresh();
+      } else {
+        toast.error(data.error ?? "Failed to delete team");
+      }
+    } catch {
+      toast.error("Something went wrong");
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -382,51 +430,93 @@ export default function TeamDetail({ team, currentUserId, joinRequests, myPendin
         <div className="game-card p-6">
           <h3 className="font-heading font-bold text-lg mb-4">Leader Actions</h3>
           <div className="space-y-3">
+            {/* Transfer leadership — only if there are other members */}
+            {team.members.length > 1 && (
+              <>
+                <button
+                  onClick={() => setShowTransfer(!showTransfer)}
+                  className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-[var(--border)] hover:border-[var(--primary-dim)] transition-colors text-sm"
+                >
+                  <span className="flex items-center gap-2">
+                    <Crown size={16} className="text-[var(--primary)]" />
+                    Transfer Leadership
+                  </span>
+                  <ChevronRight size={14} className="text-[var(--text-2)]" />
+                </button>
+
+                {showTransfer && (
+                  <div className="p-4 rounded-xl bg-[var(--surface)] space-y-3">
+                    <p className="text-sm text-[var(--text-2)]">Select a member to become the new leader:</p>
+                    <div className="space-y-2">
+                      {team.members
+                        .filter((m) => m.userId._id !== currentUserId)
+                        .map((m) => (
+                          <label key={m.userId._id} className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="radio"
+                              name="transfer"
+                              value={m.userId._id}
+                              onChange={() => setTransferTarget(m.userId._id)}
+                              className="accent-[var(--primary)]"
+                            />
+                            <Avatar src={m.userId.photo} name={m.userId.name} size="sm" />
+                            <span className="text-sm">{m.userId.name ?? m.userId.pubgName}</span>
+                          </label>
+                        ))}
+                    </div>
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm" onClick={() => setShowTransfer(false)}>Cancel</Button>
+                      <Button size="sm" variant="danger" disabled={!transferTarget} onClick={handleTransfer}>
+                        Confirm Transfer
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* Leave team */}
             <button
-              onClick={() => setShowTransfer(!showTransfer)}
-              className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-[var(--border)] hover:border-[var(--primary-dim)] transition-colors text-sm"
+              onClick={handleLeave}
+              disabled={leaving}
+              className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-[var(--border)] hover:border-[var(--warning)]/50 text-[var(--warning)] transition-colors text-sm disabled:opacity-50"
             >
               <span className="flex items-center gap-2">
-                <Crown size={16} className="text-[var(--primary)]" />
-                Transfer Leadership
+                <LogOut size={16} />
+                {leaving ? "Leaving…" : "Leave Team"}
               </span>
-              <ChevronRight size={14} className="text-[var(--text-2)]" />
+              <ChevronRight size={14} className="opacity-50" />
             </button>
 
-            {showTransfer && (
-              <div className="p-4 rounded-xl bg-[var(--surface)] space-y-3">
-                <p className="text-sm text-[var(--text-2)]">Select a member to become the new leader:</p>
-                <div className="space-y-2">
-                  {team.members
-                    .filter((m) => m.userId._id !== currentUserId)
-                    .map((m) => (
-                      <label key={m.userId._id} className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="radio"
-                          name="transfer"
-                          value={m.userId._id}
-                          onChange={() => setTransferTarget(m.userId._id)}
-                          className="accent-[var(--primary)]"
-                        />
-                        <Avatar src={m.userId.photo} name={m.userId.name} size="sm" />
-                        <span className="text-sm">{m.userId.name ?? m.userId.pubgName}</span>
-                      </label>
-                    ))}
-                </div>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm" onClick={() => setShowTransfer(false)}>Cancel</Button>
-                  <Button
-                    size="sm"
-                    variant="danger"
-                    disabled={!transferTarget}
-                    onClick={handleTransfer}
-                  >
-                    Confirm Transfer
-                  </Button>
-                </div>
-              </div>
+            {/* Delete team — only when no other members */}
+            {team.members.length <= 1 && (
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-[var(--danger)]/30 hover:border-[var(--danger)] text-[var(--danger)] transition-colors text-sm disabled:opacity-50"
+              >
+                <span className="flex items-center gap-2">
+                  <Trash2 size={16} />
+                  {deleting ? "Deleting…" : "Delete Team"}
+                </span>
+                <ChevronRight size={14} className="opacity-50" />
+              </button>
             )}
           </div>
+        </div>
+      )}
+
+      {/* Leave team — non-leader members */}
+      {isMember && !isLeader && (
+        <div className="game-card p-4">
+          <button
+            onClick={handleLeave}
+            disabled={leaving}
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-[var(--border)] hover:border-[var(--warning)]/50 text-[var(--warning)] transition-colors text-sm disabled:opacity-50"
+          >
+            <LogOut size={16} />
+            {leaving ? "Leaving…" : "Leave Team"}
+          </button>
         </div>
       )}
     </div>
