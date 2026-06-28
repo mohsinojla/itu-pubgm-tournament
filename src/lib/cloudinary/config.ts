@@ -10,10 +10,10 @@ export { cloudinary };
 
 export function getSignedUploadParams(folder: string, resourceType: "image" | "video" = "image") {
   const timestamp = Math.round(new Date().getTime() / 1000);
+  // resource_type is in the upload URL, not the signed params
   const params: Record<string, string | number> = {
     timestamp,
     folder,
-    resource_type: resourceType,
   };
 
   const signature = cloudinary.utils.api_sign_request(

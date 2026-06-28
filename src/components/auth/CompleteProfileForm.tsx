@@ -70,7 +70,9 @@ export default function CompleteProfileForm() {
       { method: "POST", body: formData }
     );
     const uploadData = await uploadRes.json();
-    if (!uploadData.secure_url) throw new Error("Upload failed");
+    if (!uploadData.secure_url) {
+      throw new Error(uploadData.error?.message ?? "Cloudinary upload failed");
+    }
     return uploadData.secure_url;
   }
 
