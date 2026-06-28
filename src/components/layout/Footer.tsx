@@ -1,6 +1,5 @@
 import Link from "next/link";
 import Image from "next/image";
-import { MessageCircle, Camera } from "lucide-react";
 
 export default function Footer() {
   const year = new Date().getFullYear();
@@ -43,14 +42,13 @@ export default function Footer() {
             </h4>
             <ul className="space-y-2 text-sm text-[var(--text-2)]">
               {[
-                ["/teams", "Teams"],
                 ["/schedule", "Schedule"],
                 ["/results", "Results"],
                 ["/statistics", "Statistics"],
                 ["/honour-board", "Honour Board"],
                 ["/gallery", "Gallery"],
                 ["/rules", "Rules"],
-                ["/about", "About Us"],
+                ["/community", "Community"],
               ].map(([href, label]) => (
                 <li key={href}>
                   <Link
@@ -82,18 +80,18 @@ export default function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Instagram"
-                className="p-2 rounded-lg bg-[var(--card)] hover:text-[var(--primary)] transition-colors"
+                className="p-2 rounded-lg bg-[var(--card)] hover:opacity-80 transition-opacity"
               >
-                <Camera size={16} />
+                <Image src="/instagram-icon.png" alt="Instagram" width={20} height={20} className="object-contain" />
               </a>
               <a
                 href="https://chat.whatsapp.com/GtPjK1tFxTW4E160fsDjIX"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Join WhatsApp Group"
-                className="p-2 rounded-lg bg-[var(--card)] hover:text-[var(--primary)] transition-colors"
+                className="p-2 rounded-lg bg-[var(--card)] hover:opacity-80 transition-opacity"
               >
-                <MessageCircle size={16} />
+                <Image src="/whatsapp-icon.png" alt="WhatsApp" width={20} height={20} className="object-contain" />
               </a>
             </div>
           </div>

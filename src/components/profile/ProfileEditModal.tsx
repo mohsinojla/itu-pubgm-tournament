@@ -10,9 +10,7 @@ import { X, User, Upload } from "lucide-react";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import { completeProfileSchema, type CompleteProfileInput } from "@/lib/validators/user.schema";
-import { DEGREE_PROGRAMMES } from "@/lib/constants/degrees";
-
-const SEMESTERS = Array.from({ length: 12 }, (_, i) => i + 1);
+import { DEGREE_PROGRAMMES, maxSemesterForDegree } from "@/lib/constants/degrees";
 
 interface Props {
   open: boolean;
@@ -27,6 +25,7 @@ interface Props {
     gender?: string;
     semester?: number;
     degreeProgramme?: string;
+    whatsapp?: string;
   };
 }
 
@@ -37,7 +36,7 @@ export default function ProfileEditModal({ open, onClose, user }: Props) {
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
 
-  const { register, handleSubmit, formState: { errors } } = useForm<CompleteProfileInput>({
+  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<CompleteProfileInput>({
     resolver: zodResolver(completeProfileSchema),
     defaultValues: {
       name: user.name ?? "",
@@ -47,8 +46,13 @@ export default function ProfileEditModal({ open, onClose, user }: Props) {
       gender: (user.gender as "male" | "female" | "other") ?? "male",
       semester: user.semester ?? 1,
       degreeProgramme: user.degreeProgramme ?? "",
+      whatsapp: user.whatsapp ?? "",
     },
   });
+
+  const selectedDegree = watch("degreeProgramme") ?? "";
+  const maxSem = selectedDegree ? maxSemesterForDegree(selectedDegree) : 8;
+  const SEMESTERS = Array.from({ length: maxSem }, (_, i) => i + 1);
 
   function handlePhotoSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -159,27 +163,40 @@ export default function ProfileEditModal({ open, onClose, user }: Props) {
             </div>
           </div>
 
+          {/* Degree first so semester options update correctly */}
           <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-[var(--text-2)] mb-1.5">Degree</label>
+              <select
+                className="w-full px-3 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-sm focus:outline-none focus:border-[var(--primary)] transition-colors"
+                {...register("degreeProgramme", {
+                  onChange: () => setValue("semester", 1),
+                })}
+              >
+                <option value="">Select</option>
+                {DEGREE_PROGRAMMES.map((d) => <option key={d} value={d}>{d}</option>)}
+              </select>
+              {errors.degreeProgramme && (
+                <p className="mt-1 text-xs text-[var(--danger)]">{errors.degreeProgramme.message}</p>
+              )}
+            </div>
             <div>
               <label className="block text-sm font-medium text-[var(--text-2)] mb-1.5">Semester</label>
               <select
                 className="w-full px-3 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-sm focus:outline-none focus:border-[var(--primary)] transition-colors"
                 {...register("semester", { valueAsNumber: true })}
               >
-                {SEMESTERS.map((s) => <option key={s} value={s}>{s}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-[var(--text-2)] mb-1.5">Degree</label>
-              <select
-                className="w-full px-3 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-sm focus:outline-none focus:border-[var(--primary)] transition-colors"
-                {...register("degreeProgramme")}
-              >
-                <option value="">Select</option>
-                {DEGREE_PROGRAMMES.map((d) => <option key={d} value={d}>{d}</option>)}
+                {SEMESTERS.map((s) => <option key={s} value={s}>Semester {s}</option>)}
               </select>
             </div>
           </div>
+
+          <Input
+            label="WhatsApp Number"
+            placeholder="03001234567"
+            error={errors.whatsapp?.message}
+            {...register("whatsapp")}
+          />
 
           <div className="flex gap-3 pt-2">
             <Button type="button" variant="outline" className="flex-1" onClick={onClose}>Cancel</Button>

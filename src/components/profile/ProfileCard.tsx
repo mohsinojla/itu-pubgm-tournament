@@ -3,10 +3,11 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { User, Shield, Star, Users, Edit2, ExternalLink } from "lucide-react";
+import { User, Shield, Star, Users, Edit2, ExternalLink, KeyRound } from "lucide-react";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import ProfileEditModal from "@/components/profile/ProfileEditModal";
+import ChangePasswordModal from "@/components/profile/ChangePasswordModal";
 
 interface ProfileUser {
   _id: string;
@@ -19,7 +20,9 @@ interface ProfileUser {
   gender?: string;
   semester?: number;
   degreeProgramme?: string;
+  whatsapp?: string;
   role: "player" | "admin" | "super_admin";
+  provider?: "credentials" | "google";
   isVerifiedPlayer?: boolean;
   profileCompleted?: boolean;
   teamId?: string;
@@ -34,20 +37,19 @@ interface Props {
 
 export default function ProfileCard({ user, isOwn = false }: Props) {
   const [editOpen, setEditOpen] = useState(false);
+  const [pwOpen, setPwOpen] = useState(false);
 
   const roleLabel =
-    user.role === "super_admin"
-      ? "Super Admin"
-      : user.role === "admin"
-      ? "Admin"
-      : "Player";
+    user.role === "super_admin" ? "Super Admin"
+    : user.role === "admin" ? "Admin"
+    : "Player";
 
   const roleBadgeVariant =
-    user.role === "super_admin"
-      ? "primary"
-      : user.role === "admin"
-      ? "blue"
-      : "default";
+    user.role === "super_admin" ? "primary"
+    : user.role === "admin" ? "blue"
+    : "default";
+
+  const canChangePassword = isOwn && user.provider === "credentials";
 
   return (
     <>
@@ -55,7 +57,6 @@ export default function ProfileCard({ user, isOwn = false }: Props) {
         {/* Left: Avatar + core info */}
         <div className="md:col-span-1">
           <div className="game-card p-6 flex flex-col items-center text-center gap-4">
-            {/* Avatar */}
             <div className="relative w-28 h-28 rounded-full overflow-hidden border-2 border-[var(--primary-dim)] ring-4 ring-[var(--primary)]/10">
               {user.photo ? (
                 <Image src={user.photo} alt={user.name ?? "Player"} fill className="object-cover" />
@@ -66,7 +67,6 @@ export default function ProfileCard({ user, isOwn = false }: Props) {
               )}
             </div>
 
-            {/* Name + badges */}
             <div>
               <h2 className="text-xl font-heading font-bold text-[var(--text-1)]">
                 {user.name ?? "—"}
@@ -75,41 +75,33 @@ export default function ProfileCard({ user, isOwn = false }: Props) {
                 <Badge variant={roleBadgeVariant}>{roleLabel}</Badge>
                 {user.isVerifiedPlayer && (
                   <Badge variant="success" className="flex items-center gap-1">
-                    <Shield size={10} />
-                    Verified
+                    <Shield size={10} /> Verified
                   </Badge>
                 )}
                 {user.isTeamLeader && (
                   <Badge variant="primary" className="flex items-center gap-1">
-                    <Star size={10} />
-                    Leader
+                    <Star size={10} /> Leader
                   </Badge>
                 )}
               </div>
             </div>
 
-            {/* Edit button */}
             {isOwn && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setEditOpen(true)}
-                className="w-full"
-              >
-                <Edit2 size={14} className="mr-1.5" />
-                Edit Profile
-              </Button>
+              <div className="w-full space-y-2">
+                <Button variant="outline" size="sm" onClick={() => setEditOpen(true)} className="w-full">
+                  <Edit2 size={14} className="mr-1.5" /> Edit Profile
+                </Button>
+                {canChangePassword && (
+                  <Button variant="outline" size="sm" onClick={() => setPwOpen(true)} className="w-full">
+                    <KeyRound size={14} className="mr-1.5" /> Change Password
+                  </Button>
+                )}
+              </div>
             )}
 
-            {/* Team link */}
             {user.teamId && (
-              <Link
-                href={`/teams/${user.teamId}`}
-                className="flex items-center gap-1.5 text-sm text-[var(--primary)] hover:underline"
-              >
-                <Users size={14} />
-                View Team
-                <ExternalLink size={12} />
+              <Link href={`/teams/${user.teamId}`} className="flex items-center gap-1.5 text-sm text-[var(--primary)] hover:underline">
+                <Users size={14} /> View Team <ExternalLink size={12} />
               </Link>
             )}
           </div>
@@ -120,7 +112,6 @@ export default function ProfileCard({ user, isOwn = false }: Props) {
           <h3 className="text-sm font-semibold text-[var(--text-2)] uppercase tracking-widest mb-4">
             Player Details
           </h3>
-
           <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
             <Detail label="Email" value={user.email} />
             <Detail label="Roll Number" value={user.rollNumber} />
@@ -128,11 +119,10 @@ export default function ProfileCard({ user, isOwn = false }: Props) {
             <Detail label="In-Game Name" value={user.pubgName} monospace />
             <Detail label="Gender" value={user.gender ? capitalize(user.gender) : undefined} />
             <Detail label="Semester" value={user.semester ? `Semester ${user.semester}` : undefined} />
-            <Detail
-              label="Degree Programme"
-              value={user.degreeProgramme}
-              className="sm:col-span-2"
-            />
+            <Detail label="Degree Programme" value={user.degreeProgramme} className="sm:col-span-2" />
+            {isOwn && (
+              <Detail label="WhatsApp" value={user.whatsapp || undefined} className="sm:col-span-2" />
+            )}
           </dl>
 
           {!user.profileCompleted && isOwn && (
@@ -146,35 +136,22 @@ export default function ProfileCard({ user, isOwn = false }: Props) {
       </div>
 
       {isOwn && (
-        <ProfileEditModal
-          open={editOpen}
-          onClose={() => setEditOpen(false)}
-          user={user}
-        />
+        <>
+          <ProfileEditModal open={editOpen} onClose={() => setEditOpen(false)} user={user} />
+          <ChangePasswordModal open={pwOpen} onClose={() => setPwOpen(false)} />
+        </>
       )}
     </>
   );
 }
 
-function Detail({
-  label,
-  value,
-  monospace,
-  className,
-}: {
-  label: string;
-  value?: string | number;
-  monospace?: boolean;
-  className?: string;
+function Detail({ label, value, monospace, className }: {
+  label: string; value?: string | number; monospace?: boolean; className?: string;
 }) {
   return (
     <div className={className}>
       <dt className="text-xs text-[var(--text-2)] uppercase tracking-wider mb-0.5">{label}</dt>
-      <dd
-        className={`text-sm text-[var(--text-1)] ${
-          monospace ? "font-mono" : ""
-        } ${!value ? "text-[var(--text-2)] italic" : ""}`}
-      >
+      <dd className={`text-sm text-[var(--text-1)] ${monospace ? "font-mono" : ""} ${!value ? "text-[var(--text-2)] italic" : ""}`}>
         {value ?? "Not provided"}
       </dd>
     </div>

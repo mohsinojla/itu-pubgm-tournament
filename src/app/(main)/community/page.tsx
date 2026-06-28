@@ -1,5 +1,6 @@
+import Image from "next/image";
 import PageHero from "@/components/common/PageHero";
-import { Users, Camera, MessageCircle } from "lucide-react";
+import { Users } from "lucide-react";
 
 export default function CommunityPage() {
   return (
@@ -58,7 +59,7 @@ export default function CommunityPage() {
               rel="noopener noreferrer"
               className="flex items-center gap-3 px-5 py-3 rounded-xl border border-[var(--border)] hover:border-[var(--primary)]/50 hover:text-[var(--primary)] transition-colors text-sm font-medium"
             >
-              <Camera size={18} />
+              <Image src="/instagram-icon.png" alt="Instagram" width={20} height={20} className="object-contain" />
               @itupubgmcommunity
             </a>
             <a
@@ -67,7 +68,7 @@ export default function CommunityPage() {
               rel="noopener noreferrer"
               className="flex items-center gap-3 px-5 py-3 rounded-xl border border-[var(--border)] hover:border-[var(--success)]/50 hover:text-[var(--success)] transition-colors text-sm font-medium"
             >
-              <MessageCircle size={18} />
+              <Image src="/whatsapp-icon.png" alt="WhatsApp" width={20} height={20} className="object-contain" />
               Join WhatsApp Group
             </a>
           </div>

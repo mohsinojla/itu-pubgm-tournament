@@ -18,6 +18,7 @@ export default async function ProfilePage({
   const isOnboarding = params.onboarding === "true";
 
   await connectDB();
+  // include `provider` so ProfileCard can show/hide password change option
   const user = await User.findById(session.user.id).select("-password").lean();
 
   if (!user) redirect("/login");
