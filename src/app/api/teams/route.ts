@@ -6,6 +6,15 @@ import User from "@/lib/db/models/User";
 import { createTeamSchema } from "@/lib/validators/team.schema";
 import { nanoid } from "nanoid";
 
+async function generateUniqueTeamId(): Promise<string> {
+  for (let i = 0; i < 20; i++) {
+    const id = String(Math.floor(10000 + Math.random() * 90000));
+    const exists = await Team.findOne({ teamId: id }).lean();
+    if (!exists) return id;
+  }
+  throw new Error("Could not generate a unique team ID");
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const page = parseInt(searchParams.get("page") ?? "1", 10);
@@ -68,11 +77,12 @@ export async function POST(request: Request) {
       );
     }
 
-    const { name, tag, logo } = parsed.data;
+    const { name, logo } = parsed.data;
+    const teamId = await generateUniqueTeamId();
 
     const team = await Team.create({
       name: name.trim(),
-      tag: tag.toUpperCase().trim(),
+      teamId,
       logo,
       leaderId: session.user.id,
       members: [{ userId: session.user.id, role: "core", joinedAt: new Date() }],
@@ -89,9 +99,8 @@ export async function POST(request: Request) {
   } catch (error: unknown) {
     const mongoError = error as { code?: number; keyPattern?: Record<string, unknown> };
     if (mongoError.code === 11000) {
-      const field = Object.keys(mongoError.keyPattern ?? {})[0];
       return NextResponse.json(
-        { success: false, error: `Team ${field === "tag" ? "tag" : "name"} is already taken` },
+        { success: false, error: "Team name is already taken" },
         { status: 409 }
       );
     }

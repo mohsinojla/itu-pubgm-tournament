@@ -58,7 +58,7 @@ export async function GET() {
     rows.push({
       "S.No": sNo++,
       "Team Name": team.name,
-      "Team Tag": `[${team.tag}]`,
+      "Team ID": `#${team.teamId}`,
       "Player Name": player.name ?? "—",
       "Roll Number": player.rollNumber ?? "—",
       "PUBG ID": player.pubgId ?? "—",
@@ -102,7 +102,7 @@ export async function GET() {
       return {
         "S.No": i + 1,
         "Team Name": t.name,
-        "Team Tag": `[${t.tag}]`,
+        "Team ID": `#${t.teamId}`,
         "Member Count": memberCount,
       };
     });

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Users, Trash2, Search, Shield } from "lucide-react";
+import { Users, Trash2, Search, Shield, Pencil, Check, X } from "lucide-react";
 import toast from "react-hot-toast";
 import Avatar from "@/components/ui/Avatar";
 import Badge from "@/components/ui/Badge";
@@ -15,7 +15,7 @@ interface TeamMember {
 interface Team {
   _id: string;
   name: string;
-  tag: string;
+  teamId: string;
   logo?: string;
   isRegistered: boolean;
   members: TeamMember[];
@@ -27,15 +27,17 @@ interface Team {
   createdAt: string;
 }
 
-export default function AdminTeamsPanel({ initialTeams }: { initialTeams: Team[] }) {
+export default function AdminTeamsPanel({ initialTeams, isSuperAdmin }: { initialTeams: Team[]; isSuperAdmin?: boolean }) {
   const [teams, setTeams] = useState(initialTeams);
   const [search, setSearch] = useState("");
   const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState("");
 
   const filtered = teams.filter(
     (t) =>
       t.name.toLowerCase().includes(search.toLowerCase()) ||
-      t.tag.toLowerCase().includes(search.toLowerCase())
+      t.teamId.includes(search)
   );
 
   async function toggleRegistered(teamId: string, current: boolean) {
@@ -53,6 +55,35 @@ export default function AdminTeamsPanel({ initialTeams }: { initialTeams: Team[]
       toast.success(!current ? "Team registered" : "Team unregistered");
     } catch {
       toast.error("Failed to update team");
+    } finally {
+      setLoadingId(null);
+    }
+  }
+
+  async function renameTeam(teamId: string) {
+    const trimmed = renameValue.trim();
+    const words = trimmed.split(/\s+/).filter(Boolean);
+    if (words.length !== 2 || trimmed.length >= 25) {
+      toast.error("Team name must be exactly 2 words and less than 25 characters");
+      return;
+    }
+    setLoadingId(teamId);
+    try {
+      const res = await fetch(`/api/teams/${teamId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: trimmed }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setTeams((prev) => prev.map((t) => (t._id === teamId ? { ...t, name: trimmed } : t)));
+        toast.success("Team renamed");
+        setRenamingId(null);
+      } else {
+        toast.error(data.error ?? "Rename failed");
+      }
+    } catch {
+      toast.error("Something went wrong");
     } finally {
       setLoadingId(null);
     }
@@ -104,7 +135,7 @@ export default function AdminTeamsPanel({ initialTeams }: { initialTeams: Team[]
             {filtered.map((team) => (
               <tr
                 key={team._id}
-                className="border-b border-[var(--border)] hover:bg-[var(--surface)]/50 transition-colors"
+                className="group border-b border-[var(--border)] hover:bg-[var(--surface)]/50 transition-colors"
               >
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3">
@@ -114,9 +145,30 @@ export default function AdminTeamsPanel({ initialTeams }: { initialTeams: Team[]
                       size="sm"
                       className="rounded-lg"
                     />
-                    <div>
-                      <div className="font-medium">{team.name}</div>
-                      <div className="text-xs text-[var(--text-2)]">[{team.tag}]</div>
+                    <div className="min-w-0">
+                      {renamingId === team._id ? (
+                        <div className="flex items-center gap-1">
+                          <input
+                            autoFocus
+                            value={renameValue}
+                            onChange={(e) => setRenameValue(e.target.value)}
+                            onKeyDown={(e) => { if (e.key === "Enter") renameTeam(team._id); if (e.key === "Escape") setRenamingId(null); }}
+                            className="px-2 py-1 text-sm rounded-lg border border-[var(--primary)] bg-[var(--surface)] focus:outline-none w-32"
+                          />
+                          <button onClick={() => renameTeam(team._id)} className="p-1 text-[var(--success)]"><Check size={13} /></button>
+                          <button onClick={() => setRenamingId(null)} className="p-1 text-[var(--text-2)]"><X size={13} /></button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1">
+                          <div className="font-medium truncate max-w-[120px]">{team.name}</div>
+                          {isSuperAdmin && (
+                            <button onClick={() => { setRenamingId(team._id); setRenameValue(team.name); }} className="p-0.5 text-[var(--text-2)] hover:text-[var(--primary)] transition-colors opacity-0 group-hover:opacity-100">
+                              <Pencil size={11} />
+                            </button>
+                          )}
+                        </div>
+                      )}
+                      <div className="text-xs text-[var(--text-2)] font-mono">#{team.teamId}</div>
                     </div>
                   </div>
                 </td>

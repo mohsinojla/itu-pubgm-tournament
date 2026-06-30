@@ -105,26 +105,18 @@ export default function CreateTeamForm() {
 
       <Input
         label="Team Name"
-        placeholder="e.g. Alpha Squad"
+        placeholder="e.g. Shadow Wolves"
         error={errors.name?.message}
+        hint="Exactly 2 words, less than 25 characters (e.g. Shadow Wolves)"
         required
         {...register("name")}
-      />
-
-      <Input
-        label="Team Tag"
-        placeholder="e.g. ALPH (max 5 chars)"
-        error={errors.tag?.message}
-        hint="Short unique identifier shown in brackets — letters and numbers only"
-        required
-        className="uppercase"
-        {...register("tag")}
       />
 
       <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-4 text-sm text-[var(--text-2)]">
         <p className="font-medium text-[var(--text-1)] mb-1">Team structure</p>
         <ul className="space-y-1 text-xs list-disc list-inside">
           <li>You become the team leader as the creator</li>
+          <li>A unique 5-digit Team ID is auto-assigned</li>
           <li>Up to 4 core players + 1 substitute (5 total)</li>
           <li>Other players can request to join</li>
           <li>Leadership can be transferred to any member</li>

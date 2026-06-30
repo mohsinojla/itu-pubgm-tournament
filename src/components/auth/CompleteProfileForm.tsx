@@ -11,7 +11,7 @@ import { User, Camera, Upload } from "lucide-react";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import { completeProfileSchema, type CompleteProfileInput } from "@/lib/validators/user.schema";
-import { DEGREE_PROGRAMMES, maxSemesterForDegree } from "@/lib/constants/degrees";
+import { DEGREE_LEVELS, PROGRAMMES_BY_LEVEL, maxSemesterForDegree, type DegreeLevel } from "@/lib/constants/degrees";
 import { compressImage } from "@/lib/utils/compress";
 
 const GENDER_OPTIONS = [
@@ -27,6 +27,7 @@ export default function CompleteProfileForm() {
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [degreeLevel, setDegreeLevel] = useState<DegreeLevel | "">("");
 
   const {
     register,
@@ -37,8 +38,9 @@ export default function CompleteProfileForm() {
   } = useForm<CompleteProfileInput>({ resolver: zodResolver(completeProfileSchema) });
 
   const selectedDegree = watch("degreeProgramme") ?? "";
-  const maxSem = selectedDegree ? maxSemesterForDegree(selectedDegree) : 8;
+  const maxSem = selectedDegree ? maxSemesterForDegree(selectedDegree) : (degreeLevel === "BS" ? 8 : 4);
   const SEMESTERS = Array.from({ length: maxSem }, (_, i) => i + 1);
+  const filteredProgrammes = degreeLevel ? PROGRAMMES_BY_LEVEL[degreeLevel] : [];
 
   function handlePhotoSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -212,52 +214,74 @@ export default function CompleteProfileForm() {
         )}
       </div>
 
-      {/* Degree + Semester in a grid — degree first so semester options update */}
-      <div className="grid grid-cols-2 gap-4">
-        {/* Degree */}
-        <div>
-          <label className="block text-sm font-medium text-[var(--text-2)] mb-1.5">
-            Degree Programme <span className="text-[var(--danger)]">*</span>
-          </label>
-          <select
-            className="w-full px-3 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--text-1)] text-sm focus:outline-none focus:border-[var(--primary)] transition-colors"
-            {...register("degreeProgramme", {
-              onChange: () => setValue("semester", 0 as never),
-            })}
-          >
-            <option value="">Select</option>
-            {DEGREE_PROGRAMMES.map((d) => (
-              <option key={d} value={d}>
-                {d}
-              </option>
-            ))}
-          </select>
-          {errors.degreeProgramme && (
-            <p className="mt-1 text-xs text-[var(--danger)]">{errors.degreeProgramme.message}</p>
-          )}
-        </div>
-
-        {/* Semester — options depend on degree level */}
-        <div>
-          <label className="block text-sm font-medium text-[var(--text-2)] mb-1.5">
-            Semester <span className="text-[var(--danger)]">*</span>
-          </label>
-          <select
-            className="w-full px-3 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--text-1)] text-sm focus:outline-none focus:border-[var(--primary)] transition-colors"
-            {...register("semester", { valueAsNumber: true })}
-          >
-            <option value="">Select</option>
-            {SEMESTERS.map((s) => (
-              <option key={s} value={s}>
-                Semester {s}
-              </option>
-            ))}
-          </select>
-          {errors.semester && (
-            <p className="mt-1 text-xs text-[var(--danger)]">{errors.semester.message}</p>
-          )}
-        </div>
+      {/* Degree Level */}
+      <div>
+        <label className="block text-sm font-medium text-[var(--text-2)] mb-1.5">
+          Degree Level <span className="text-[var(--danger)]">*</span>
+        </label>
+        <select
+          value={degreeLevel}
+          onChange={(e) => {
+            const lvl = e.target.value as DegreeLevel | "";
+            setDegreeLevel(lvl);
+            setValue("degreeProgramme", "" as never);
+            setValue("semester", 0 as never);
+          }}
+          className="w-full px-3 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--text-1)] text-sm focus:outline-none focus:border-[var(--primary)] transition-colors"
+        >
+          <option value="">Select level</option>
+          {DEGREE_LEVELS.map((lvl) => (
+            <option key={lvl} value={lvl}>{lvl}</option>
+          ))}
+        </select>
       </div>
+
+      {/* Degree Programme + Semester — appear after level is chosen */}
+      {degreeLevel && (
+        <div className="grid grid-cols-2 gap-4">
+          {/* Programme — key forces remount (and option reset) when level changes */}
+          <div>
+            <label className="block text-sm font-medium text-[var(--text-2)] mb-1.5">
+              Programme <span className="text-[var(--danger)]">*</span>
+            </label>
+            <select
+              key={degreeLevel}
+              className="w-full px-3 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--text-1)] text-sm focus:outline-none focus:border-[var(--primary)] transition-colors"
+              {...register("degreeProgramme", {
+                onChange: () => setValue("semester", 0 as never),
+              })}
+            >
+              <option value="">Select programme</option>
+              {filteredProgrammes.map((d) => (
+                <option key={d} value={d}>{d}</option>
+              ))}
+            </select>
+            {errors.degreeProgramme && (
+              <p className="mt-1 text-xs text-[var(--danger)]">{errors.degreeProgramme.message}</p>
+            )}
+          </div>
+
+          {/* Semester */}
+          <div>
+            <label className="block text-sm font-medium text-[var(--text-2)] mb-1.5">
+              Semester <span className="text-[var(--danger)]">*</span>
+            </label>
+            <select
+              key={`sem-${degreeLevel}`}
+              className="w-full px-3 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--text-1)] text-sm focus:outline-none focus:border-[var(--primary)] transition-colors"
+              {...register("semester", { valueAsNumber: true })}
+            >
+              <option value="">Select</option>
+              {SEMESTERS.map((s) => (
+                <option key={s} value={s}>Semester {s}</option>
+              ))}
+            </select>
+            {errors.semester && (
+              <p className="mt-1 text-xs text-[var(--danger)]">{errors.semester.message}</p>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* WhatsApp */}
       <Input

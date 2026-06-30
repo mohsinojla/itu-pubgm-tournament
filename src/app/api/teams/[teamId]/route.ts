@@ -45,16 +45,31 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ te
   }
 
   const body = await request.json();
-  // isRegistered can only be toggled by admins, not by team leaders
-  const leaderAllowed = ["name", "tag", "logo"];
+  // Only super admin can rename a team; leaders can update logo; admins can toggle isRegistered
+  const leaderAllowed = ["logo"];
   const adminAllowed = [...leaderAllowed, "isRegistered"];
-  const allowed = isAdmin ? adminAllowed : leaderAllowed;
+  const superAdminAllowed = [...adminAllowed, "name"];
+  const allowed = isSuperAdmin(session.user)
+    ? superAdminAllowed
+    : isAdmin
+    ? adminAllowed
+    : leaderAllowed;
+
   const updates: Record<string, unknown> = {};
   for (const key of allowed) {
     if (body[key] !== undefined) updates[key] = body[key];
   }
-  if (updates.tag) updates.tag = (updates.tag as string).toUpperCase().trim();
-  if (updates.name) updates.name = (updates.name as string).trim();
+  if (updates.name) {
+    const trimmed = (updates.name as string).trim();
+    const words = trimmed.split(/\s+/).filter(Boolean);
+    if (words.length !== 2 || trimmed.length >= 25) {
+      return NextResponse.json(
+        { success: false, error: "Team name must be exactly 2 words and less than 25 characters" },
+        { status: 400 }
+      );
+    }
+    updates.name = trimmed;
+  }
 
   try {
     const updated = await Team.findByIdAndUpdate(
@@ -66,7 +81,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ te
   } catch (error: unknown) {
     const mongoError = error as { code?: number };
     if (mongoError.code === 11000) {
-      return NextResponse.json({ success: false, error: "Name or tag already taken" }, { status: 409 });
+      return NextResponse.json({ success: false, error: "Team name already taken" }, { status: 409 });
     }
     return NextResponse.json({ success: false, error: "Update failed" }, { status: 500 });
   }

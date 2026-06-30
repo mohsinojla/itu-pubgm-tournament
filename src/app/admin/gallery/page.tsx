@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth/auth";
 import { redirect } from "next/navigation";
 import { connectDB } from "@/lib/db/mongoose";
 import Gallery from "@/lib/db/models/Gallery";
+import GallerySection from "@/lib/db/models/GallerySection";
 import { isSuperAdmin, hasPermission } from "@/lib/auth/permissions";
 import { PERMISSIONS } from "@/lib/constants/permissions";
 import GalleryGrid from "@/components/gallery/GalleryGrid";
@@ -17,12 +18,19 @@ export default async function AdminGalleryPage() {
   if (!canManage) redirect("/admin");
 
   await connectDB();
-  const items = await Gallery.find().sort({ order: 1, createdAt: -1 }).lean();
+  const [items, sections] = await Promise.all([
+    Gallery.find().sort({ order: 1, createdAt: -1 }).lean(),
+    GallerySection.find().sort({ order: 1, name: 1 }).lean(),
+  ]);
 
   return (
     <div>
       <h1 className="font-heading text-2xl font-bold mb-6">Gallery Management</h1>
-      <GalleryGrid items={JSON.parse(JSON.stringify(items))} isAdmin />
+      <GalleryGrid
+        items={JSON.parse(JSON.stringify(items))}
+        sections={JSON.parse(JSON.stringify(sections))}
+        isAdmin
+      />
     </div>
   );
 }

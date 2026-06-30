@@ -23,7 +23,7 @@ export default async function AdminTeamsPage() {
   return (
     <div>
       <h1 className="font-heading text-2xl font-bold mb-6">Team Management</h1>
-      <AdminTeamsPanel initialTeams={JSON.parse(JSON.stringify(teams))} />
+      <AdminTeamsPanel initialTeams={JSON.parse(JSON.stringify(teams))} isSuperAdmin={isSuperAdmin(session.user)} />
     </div>
   );
 }

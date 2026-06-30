@@ -44,7 +44,7 @@ interface JoinReq {
 interface Team {
   _id: string;
   name: string;
-  tag: string;
+  teamId: string;
   logo?: string;
   leaderId: { _id: string; name?: string; photo?: string; pubgName?: string; whatsapp?: string };
   members: Member[];
@@ -232,7 +232,7 @@ export default function TeamDetail({ team, currentUserId, joinRequests, myPendin
           <div className="flex items-start justify-between gap-2 flex-wrap">
             <div>
               <h2 className="font-heading text-2xl font-bold">{team.name}</h2>
-              <p className="text-sm text-[var(--text-2)] font-mono">[{team.tag}]</p>
+              <p className="text-sm text-[var(--text-2)] font-mono">Team ID #{team.teamId}</p>
             </div>
             <div className="flex items-center gap-2">
               {team.isRegistered && <Badge variant="success">Registered</Badge>}

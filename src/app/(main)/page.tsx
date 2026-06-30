@@ -67,6 +67,21 @@ export default async function HomePage() {
                   Register Now
                 </Link>
                 <Link
+                  href="/login"
+                  className="px-8 py-3.5 rounded-xl border border-[var(--border)] text-[var(--text-1)] font-medium text-base hover:border-[var(--primary-dim)] transition-colors"
+                >
+                  Login
+                </Link>
+              </>
+            ) : !session.user.profileCompleted ? (
+              <>
+                <Link
+                  href="/profile"
+                  className="px-8 py-3.5 rounded-xl bg-[var(--primary)] text-black font-bold text-base hover:bg-[var(--primary-dim)] transition-colors glow-primary-sm"
+                >
+                  Complete Profile
+                </Link>
+                <Link
                   href="/teams"
                   className="px-8 py-3.5 rounded-xl border border-[var(--border)] text-[var(--text-1)] font-medium text-base hover:border-[var(--primary-dim)] transition-colors"
                 >
@@ -142,18 +157,24 @@ export default async function HomePage() {
           <h2 className="font-heading text-3xl font-bold mb-3 gold-text">Ready to compete?</h2>
           <p className="text-[var(--text-2)] mb-8">Register, form your team, and make history at ITU.</p>
           <div className="flex flex-wrap items-center justify-center gap-4">
-            <Link
-              href="/register"
-              className="px-6 py-3 rounded-xl bg-[var(--primary)] text-black font-semibold hover:bg-[var(--primary-dim)] transition-colors"
-            >
-              Get Started
-            </Link>
-            <Link
-              href="/rules"
-              className="px-6 py-3 rounded-xl border border-[var(--border)] hover:border-[var(--primary-dim)] transition-colors"
-            >
-              Read the Rules
-            </Link>
+            {!session?.user?.id ? (
+              <>
+                <Link href="/register" className="px-6 py-3 rounded-xl bg-[var(--primary)] text-black font-semibold hover:bg-[var(--primary-dim)] transition-colors">Get Started</Link>
+                <Link href="/login" className="px-6 py-3 rounded-xl border border-[var(--border)] hover:border-[var(--primary-dim)] transition-colors">Login</Link>
+              </>
+            ) : !session.user.profileCompleted ? (
+              <Link href="/profile" className="px-6 py-3 rounded-xl bg-[var(--primary)] text-black font-semibold hover:bg-[var(--primary-dim)] transition-colors">Complete Your Profile</Link>
+            ) : !session.user.teamId ? (
+              <>
+                <Link href="/teams/create" className="px-6 py-3 rounded-xl bg-[var(--primary)] text-black font-semibold hover:bg-[var(--primary-dim)] transition-colors">Create a Team</Link>
+                <Link href="/teams" className="px-6 py-3 rounded-xl border border-[var(--border)] hover:border-[var(--primary-dim)] transition-colors">Browse Teams</Link>
+              </>
+            ) : (
+              <>
+                <Link href={`/teams/${session.user.teamId}`} className="px-6 py-3 rounded-xl bg-[var(--primary)] text-black font-semibold hover:bg-[var(--primary-dim)] transition-colors">My Team</Link>
+                <Link href="/rules" className="px-6 py-3 rounded-xl border border-[var(--border)] hover:border-[var(--primary-dim)] transition-colors">Read the Rules</Link>
+              </>
+            )}
           </div>
         </div>
       </section>

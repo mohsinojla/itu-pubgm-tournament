@@ -79,7 +79,7 @@ export default async function HonourBoardPage() {
                 title="Top Team"
                 icon={<Users size={20} className="text-[var(--primary)]" />}
                 teamName={topTeam.name as string}
-                teamTag={topTeam.tag as string}
+                teamTag={topTeam.teamId as string}
                 stat={`${topTeam.totalPoints ?? 0} points · ${topTeam.wins ?? 0} wins`}
                 href={`/teams/${topTeam._id}`}
               />

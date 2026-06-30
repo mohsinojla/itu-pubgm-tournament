@@ -28,7 +28,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { type, url, publicId, thumbnail, caption, tags } = await request.json();
+    const { type, url, publicId, thumbnail, caption, tags, sectionId } = await request.json();
     if (!type || !url || !publicId) {
       return NextResponse.json({ success: false, error: "type, url, and publicId are required" }, { status: 400 });
     }
@@ -42,6 +42,7 @@ export async function POST(request: Request) {
       caption,
       tags: tags ?? [],
       uploadedBy: session.user.id,
+      ...(sectionId ? { sectionId } : {}),
     });
 
     return NextResponse.json({ success: true, item }, { status: 201 });

@@ -9,7 +9,7 @@ export interface ITeamMember {
 export interface ITeam extends Document {
   _id: mongoose.Types.ObjectId;
   name: string;
-  tag: string;
+  teamId: string;
   logo?: string;
   leaderId: mongoose.Types.ObjectId;
   members: ITeamMember[];
@@ -26,14 +26,7 @@ export interface ITeam extends Document {
 const TeamSchema = new Schema<ITeam>(
   {
     name: { type: String, required: true, unique: true, trim: true },
-    tag: {
-      type: String,
-      required: true,
-      unique: true,
-      uppercase: true,
-      trim: true,
-      maxlength: 5,
-    },
+    teamId: { type: String, required: true, unique: true, trim: true },
     logo: { type: String },
     leaderId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     members: {
@@ -61,7 +54,7 @@ const TeamSchema = new Schema<ITeam>(
 );
 
 TeamSchema.index({ name: 1 });
-TeamSchema.index({ tag: 1 });
+TeamSchema.index({ teamId: 1 });
 TeamSchema.index({ leaderId: 1 });
 TeamSchema.index({ shareToken: 1 });
 

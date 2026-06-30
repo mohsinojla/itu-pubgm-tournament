@@ -67,7 +67,7 @@ export default async function TeamDetailPage({
     <>
       <PageHero
         title={teamJson.name}
-        subtitle={`[${teamJson.tag}] · ${teamJson.members.length} member${teamJson.members.length !== 1 ? "s" : ""}`}
+        subtitle={`ID #${teamJson.teamId} · ${teamJson.members.length} member${teamJson.members.length !== 1 ? "s" : ""}`}
       />
       <div className="max-w-4xl mx-auto px-4 py-10">
         <TeamDetail

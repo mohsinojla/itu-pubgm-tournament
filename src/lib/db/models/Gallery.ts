@@ -8,6 +8,7 @@ export interface IGallery extends Document {
   thumbnail?: string;
   caption?: string;
   uploadedBy: mongoose.Types.ObjectId;
+  sectionId?: mongoose.Types.ObjectId;
   tags: string[];
   order: number;
   createdAt: Date;
@@ -22,6 +23,7 @@ const GallerySchema = new Schema<IGallery>(
     thumbnail: { type: String },
     caption: { type: String, maxlength: 300 },
     uploadedBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    sectionId: { type: Schema.Types.ObjectId, ref: "GallerySection" },
     tags: { type: [String], default: [] },
     order: { type: Number, default: 0 },
   },

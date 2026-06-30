@@ -20,7 +20,7 @@ interface TeamMember {
 interface Team {
   _id: string;
   name: string;
-  tag: string;
+  teamId: string;
   logo?: string;
   leaderId: {
     _id: string;
@@ -66,7 +66,7 @@ export default function TeamCard({ team, currentUserId }: Props) {
               <h3 className="font-heading font-bold text-[var(--text-1)] truncate">{team.name}</h3>
               {isLeader && <Star size={12} className="text-[var(--primary)] shrink-0" />}
             </div>
-            <p className="text-xs text-[var(--text-2)] font-mono mt-0.5">[{team.tag}]</p>
+            <p className="text-xs text-[var(--text-2)] font-mono mt-0.5">ID #{team.teamId}</p>
             <div className="flex items-center gap-1.5 mt-1">
               {team.isRegistered && <Badge variant="success" className="text-[10px]">Registered</Badge>}
               {isInTeam && <Badge variant="primary" className="text-[10px]">{isLeader ? "Leader" : "Member"}</Badge>}

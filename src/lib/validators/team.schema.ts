@@ -3,13 +3,11 @@ import { z } from "zod";
 export const createTeamSchema = z.object({
   name: z
     .string()
-    .min(2, "Team name must be at least 2 characters")
-    .max(50, "Team name too long"),
-  tag: z
-    .string()
-    .min(2, "Tag must be at least 2 characters")
-    .max(5, "Tag max 5 characters")
-    .regex(/^[A-Z0-9]+$/i, "Tag can only contain letters and numbers"),
+    .max(24, "Team name must be less than 25 characters")
+    .refine(
+      (v) => v.trim().split(/\s+/).filter(Boolean).length === 2,
+      "Team name must be exactly 2 words (e.g. Shadow Wolves)"
+    ),
   logo: z.string().optional(),
 });
 
