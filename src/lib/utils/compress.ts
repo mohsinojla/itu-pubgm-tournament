@@ -1,10 +1,10 @@
 /**
  * Compresses an image file to stay under maxKB using the Canvas API.
- * - Scales dimensions down to at most 1200px on the longest side
+ * - Scales dimensions down to at most maxPx on the longest side
  * - Iteratively reduces JPEG quality until the target size is met
  * - Always returns a JPEG (best compression for photos)
  */
-export async function compressImage(file: File, maxKB = 200): Promise<File> {
+export async function compressImage(file: File, maxKB = 200, maxPx = 1200): Promise<File> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onerror = reject;
@@ -12,12 +12,11 @@ export async function compressImage(file: File, maxKB = 200): Promise<File> {
       const img = new window.Image();
       img.onerror = reject;
       img.onload = () => {
-        const MAX_PX = 1200;
         let { width, height } = img;
 
         // Scale down large images
-        if (width > MAX_PX || height > MAX_PX) {
-          const ratio = Math.min(MAX_PX / width, MAX_PX / height);
+        if (width > maxPx || height > maxPx) {
+          const ratio = Math.min(maxPx / width, maxPx / height);
           width = Math.round(width * ratio);
           height = Math.round(height * ratio);
         }
@@ -58,4 +57,21 @@ export async function compressImage(file: File, maxKB = 200): Promise<File> {
     };
     reader.readAsDataURL(file);
   });
+}
+
+/**
+ * Gallery image compression: < 1 MB target, up to 1920px longest side.
+ * If the file is already under 1 MB, returns it unchanged (no re-encoding).
+ */
+export async function compressGalleryImage(file: File): Promise<File> {
+  const ONE_MB = 1024 * 1024;
+  if (file.size <= ONE_MB) return file;
+  return compressImage(file, 1024, 1920);
+}
+
+/** Human-readable file size, e.g. "1.4 MB" */
+export function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }

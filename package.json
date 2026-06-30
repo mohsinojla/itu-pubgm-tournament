@@ -10,6 +10,8 @@
     "seed": "ts-node --project tsconfig.json -e \"process.env.TS_NODE_PROJECT='tsconfig.json'\" scripts/seed.ts"
   },
   "dependencies": {
+    "@ffmpeg/ffmpeg": "^0.12.15",
+    "@ffmpeg/util": "^0.12.2",
     "@hookform/resolvers": "^5.4.0",
     "@radix-ui/react-dialog": "^1.1.17",
     "@radix-ui/react-dropdown-menu": "^2.1.18",
