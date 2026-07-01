@@ -2,16 +2,15 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import {
-  Plus, Trash2, ChevronUp, ChevronDown, Star, Users,
-  Search, X, Check, Pencil,
+  Plus, Trash2, ChevronUp, ChevronDown, Star, Search, X, Check, Pencil,
 } from "lucide-react";
 import Button from "@/components/ui/Button";
 import Avatar from "@/components/ui/Avatar";
 
-// ─── Types ───────────────────────────────────────────────
+// ─── Types ───────────────────────────────────────────────────────────────────
+
 interface Event {
   _id: string;
   name: string;
@@ -42,9 +41,9 @@ interface Props {
   initialMembers: Member[];
 }
 
-// ─── Root ─────────────────────────────────────────────────
+// ─── Root ─────────────────────────────────────────────────────────────────────
+
 export default function CommunityAdmin({ initialEvents, initialMembers }: Props) {
-  const router = useRouter();
   const [events, setEvents] = useState<Event[]>(
     [...initialEvents].sort((a, b) => a.order - b.order)
   );
@@ -52,7 +51,7 @@ export default function CommunityAdmin({ initialEvents, initialMembers }: Props)
 
   const generalMembers = members.filter((m) => !m.eventId);
 
-  // ── Reorder helpers ───────────────────────────────────
+  // ── Event reorder ──────────────────────────────────────────────────────────
   async function moveEvent(idx: number, dir: -1 | 1) {
     const next = [...events];
     const swapIdx = idx + dir;
@@ -60,7 +59,6 @@ export default function CommunityAdmin({ initialEvents, initialMembers }: Props)
     [next[idx], next[swapIdx]] = [next[swapIdx], next[idx]];
     const reordered = next.map((e, i) => ({ ...e, order: i }));
     setEvents(reordered);
-
     await fetch("/api/admin/gallery-sections/reorder", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -68,9 +66,39 @@ export default function CommunityAdmin({ initialEvents, initialMembers }: Props)
     });
   }
 
-  // ── Add member callback (shared) ─────────────────────
+  // ── Member reorder within an event ────────────────────────────────────────
+  const handleMembersReorder = useCallback(
+    (memberAId: string, newOrderA: number, memberBId: string, newOrderB: number) => {
+      setMembers((prev) =>
+        prev.map((m) => {
+          if (m._id === memberAId) return { ...m, order: newOrderA };
+          if (m._id === memberBId) return { ...m, order: newOrderB };
+          return m;
+        })
+      );
+      Promise.all([
+        fetch(`/api/admin/event-community/${memberAId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ order: newOrderA }),
+        }),
+        fetch(`/api/admin/event-community/${memberBId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ order: newOrderB }),
+        }),
+      ]).catch(() => toast.error("Reorder save failed"));
+    },
+    []
+  );
+
+  // ── Member CRUD callbacks ──────────────────────────────────────────────────
   const handleMemberAdded = useCallback((member: Member) => {
     setMembers((prev) => [...prev, member]);
+  }, []);
+
+  const handleMemberUpdated = useCallback((updated: Member) => {
+    setMembers((prev) => prev.map((m) => (m._id === updated._id ? updated : m)));
   }, []);
 
   const handleMemberRemoved = useCallback((memberId: string) => {
@@ -82,14 +110,17 @@ export default function CommunityAdmin({ initialEvents, initialMembers }: Props)
       {/* General / campus ambassador section */}
       <EventSection
         label="General Community"
-        description="Campus ambassador and general organizing members (not tied to a specific event)"
+        description="Campus ambassador and general organizing members not tied to a specific event"
         members={generalMembers}
         eventId={null}
-        onMemberAdded={handleMemberAdded}
-        onMemberRemoved={handleMemberRemoved}
+        showHighlighted
+        canReorder={false}
         isFirst
         isLast
-        canReorder={false}
+        onMemberAdded={handleMemberAdded}
+        onMemberUpdated={handleMemberUpdated}
+        onMemberRemoved={handleMemberRemoved}
+        onMembersReorder={handleMembersReorder}
       />
 
       {events.length === 0 && (
@@ -102,7 +133,6 @@ export default function CommunityAdmin({ initialEvents, initialMembers }: Props)
         </p>
       )}
 
-      {/* One card per event */}
       {events.map((event, idx) => {
         const eventMembers = members.filter((m) => m.eventId === event._id);
         return (
@@ -112,13 +142,16 @@ export default function CommunityAdmin({ initialEvents, initialMembers }: Props)
             description={event.description}
             members={eventMembers}
             eventId={event._id}
-            onMemberAdded={handleMemberAdded}
-            onMemberRemoved={handleMemberRemoved}
+            showHighlighted={false}
+            canReorder
             isFirst={idx === 0}
             isLast={idx === events.length - 1}
-            canReorder
             onMoveUp={() => moveEvent(idx, -1)}
             onMoveDown={() => moveEvent(idx, 1)}
+            onMemberAdded={handleMemberAdded}
+            onMemberUpdated={handleMemberUpdated}
+            onMemberRemoved={handleMemberRemoved}
+            onMembersReorder={handleMembersReorder}
           />
         );
       })}
@@ -126,33 +159,52 @@ export default function CommunityAdmin({ initialEvents, initialMembers }: Props)
   );
 }
 
-// ─── EventSection ─────────────────────────────────────────
+// ─── EventSection ─────────────────────────────────────────────────────────────
+
 function EventSection({
   label,
   description,
   members,
   eventId,
-  onMemberAdded,
-  onMemberRemoved,
+  showHighlighted,
+  canReorder,
   isFirst,
   isLast,
-  canReorder,
   onMoveUp,
   onMoveDown,
+  onMemberAdded,
+  onMemberUpdated,
+  onMemberRemoved,
+  onMembersReorder,
 }: {
   label: string;
   description?: string;
   members: Member[];
   eventId: string | null;
-  onMemberAdded: (m: Member) => void;
-  onMemberRemoved: (id: string) => void;
+  showHighlighted: boolean;
+  canReorder: boolean;
   isFirst: boolean;
   isLast: boolean;
-  canReorder: boolean;
   onMoveUp?: () => void;
   onMoveDown?: () => void;
+  onMemberAdded: (m: Member) => void;
+  onMemberUpdated: (m: Member) => void;
+  onMemberRemoved: (id: string) => void;
+  onMembersReorder: (aId: string, orderA: number, bId: string, orderB: number) => void;
 }) {
   const [showAdd, setShowAdd] = useState(false);
+
+  // Sort by order then creation time
+  const sorted = [...members].sort((a, b) => a.order - b.order || 0);
+
+  function moveMember(idx: number, dir: -1 | 1) {
+    const swapIdx = idx + dir;
+    if (swapIdx < 0 || swapIdx >= sorted.length) return;
+    const a = sorted[idx];
+    const b = sorted[swapIdx];
+    // Swap their order values
+    onMembersReorder(a._id, b.order, b._id, a.order);
+  }
 
   return (
     <div className="rounded-2xl border border-[var(--border)] overflow-hidden">
@@ -165,33 +217,23 @@ function EventSection({
         </div>
         <span className="text-xs text-[var(--text-2)] shrink-0">{members.length} members</span>
 
-        {/* Reorder buttons */}
         {canReorder && (
           <div className="flex gap-0.5">
-            <button
-              onClick={onMoveUp}
-              disabled={isFirst}
-              title="Move up"
-              className="p-1.5 rounded-lg text-[var(--text-2)] hover:text-[var(--primary)] hover:bg-[var(--primary)]/10 disabled:opacity-30 transition-colors"
-            >
+            <button onClick={onMoveUp} disabled={isFirst} title="Move section up"
+              className="p-1.5 rounded-lg text-[var(--text-2)] hover:text-[var(--primary)] hover:bg-[var(--primary)]/10 disabled:opacity-30 transition-colors">
               <ChevronUp size={15} />
             </button>
-            <button
-              onClick={onMoveDown}
-              disabled={isLast}
-              title="Move down"
-              className="p-1.5 rounded-lg text-[var(--text-2)] hover:text-[var(--primary)] hover:bg-[var(--primary)]/10 disabled:opacity-30 transition-colors"
-            >
+            <button onClick={onMoveDown} disabled={isLast} title="Move section down"
+              className="p-1.5 rounded-lg text-[var(--text-2)] hover:text-[var(--primary)] hover:bg-[var(--primary)]/10 disabled:opacity-30 transition-colors">
               <ChevronDown size={15} />
             </button>
           </div>
         )}
 
-        <button
-          onClick={() => setShowAdd((v) => !v)}
-          className={`p-1.5 rounded-lg transition-colors ${showAdd ? "text-[var(--primary)] bg-[var(--primary)]/10" : "text-[var(--text-2)] hover:text-[var(--primary)] hover:bg-[var(--primary)]/10"}`}
-          title="Add member"
-        >
+        <button onClick={() => setShowAdd((v) => !v)} title="Add member"
+          className={`p-1.5 rounded-lg transition-colors ${showAdd
+            ? "text-[var(--primary)] bg-[var(--primary)]/10"
+            : "text-[var(--text-2)] hover:text-[var(--primary)] hover:bg-[var(--primary)]/10"}`}>
           <Plus size={15} />
         </button>
       </div>
@@ -201,6 +243,7 @@ function EventSection({
         <div className="px-5 py-4 border-b border-[var(--border)] bg-[var(--card)]/30">
           <AddMemberForm
             eventId={eventId}
+            showHighlighted={showHighlighted}
             existingUserIds={members.map((m) => m.userId._id)}
             onAdded={(m) => { onMemberAdded(m); setShowAdd(false); }}
             onCancel={() => setShowAdd(false)}
@@ -208,16 +251,26 @@ function EventSection({
         </div>
       )}
 
-      {/* Members list */}
+      {/* Members grid */}
       <div className="p-5">
-        {members.length === 0 ? (
+        {sorted.length === 0 ? (
           <p className="text-sm text-[var(--text-2)] text-center py-6">
             No members yet. Click <Plus size={12} className="inline" /> to add someone.
           </p>
         ) : (
-          <div className="space-y-2">
-            {members.map((m) => (
-              <MemberRow key={m._id} member={m} onRemoved={onMemberRemoved} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {sorted.map((m, idx) => (
+              <MemberCard
+                key={m._id}
+                member={m}
+                showHighlighted={showHighlighted}
+                isFirst={idx === 0}
+                isLast={idx === sorted.length - 1}
+                onMoveUp={() => moveMember(idx, -1)}
+                onMoveDown={() => moveMember(idx, 1)}
+                onUpdated={onMemberUpdated}
+                onRemoved={onMemberRemoved}
+              />
             ))}
           </div>
         )}
@@ -226,102 +279,195 @@ function EventSection({
   );
 }
 
-// ─── MemberRow ────────────────────────────────────────────
-function MemberRow({ member, onRemoved }: { member: Member; onRemoved: (id: string) => void }) {
+// ─── MemberCard (admin editable) ──────────────────────────────────────────────
+
+function MemberCard({
+  member,
+  showHighlighted,
+  isFirst,
+  isLast,
+  onMoveUp,
+  onMoveDown,
+  onUpdated,
+  onRemoved,
+}: {
+  member: Member;
+  showHighlighted: boolean;
+  isFirst: boolean;
+  isLast: boolean;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
+  onUpdated: (m: Member) => void;
+  onRemoved: (id: string) => void;
+}) {
   const [editing, setEditing] = useState(false);
   const [role, setRole] = useState(member.communityRole);
+  const [bio, setBio] = useState(member.bio ?? "");
   const [highlighted, setHighlighted] = useState(member.isHighlighted);
   const [saving, setSaving] = useState(false);
+  const u = member.userId;
+
+  // Keep local state in sync if parent refreshes
+  useEffect(() => {
+    if (!editing) {
+      setRole(member.communityRole);
+      setBio(member.bio ?? "");
+      setHighlighted(member.isHighlighted);
+    }
+  }, [member, editing]);
 
   async function saveEdits() {
+    if (!role.trim()) { toast.error("Role is required"); return; }
     setSaving(true);
     try {
       const res = await fetch(`/api/admin/event-community/${member._id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ communityRole: role, isHighlighted: highlighted }),
+        body: JSON.stringify({
+          communityRole: role.trim(),
+          bio: bio.trim() || undefined,
+          isHighlighted: highlighted,
+        }),
       });
       const data = await res.json();
-      if (data.success) { toast.success("Updated"); setEditing(false); }
-      else toast.error(data.error ?? "Failed");
+      if (data.success) {
+        toast.success("Saved");
+        onUpdated({ ...member, communityRole: role.trim(), bio: bio.trim() || undefined, isHighlighted: highlighted });
+        setEditing(false);
+      } else {
+        toast.error(data.error ?? "Failed to save");
+      }
     } finally {
       setSaving(false);
     }
   }
 
   async function remove() {
-    if (!confirm(`Remove ${member.userId.name ?? "this member"} from this section?`)) return;
+    if (!confirm(`Remove ${u.name ?? "this member"}?`)) return;
     const res = await fetch(`/api/admin/event-community/${member._id}`, { method: "DELETE" });
     const data = await res.json();
     if (data.success) { toast.success("Removed"); onRemoved(member._id); }
-    else toast.error(data.error ?? "Failed");
+    else toast.error(data.error ?? "Failed to remove");
   }
 
-  const u = member.userId;
-
   return (
-    <div className="flex items-center gap-3 p-3 rounded-xl border border-[var(--border)] hover:border-[var(--primary)]/20 transition-colors group">
-      <Avatar src={u.photo} name={u.name ?? u.email} size="sm" />
+    <div className="relative rounded-2xl border border-[var(--border)] hover:border-[var(--primary)]/30 bg-[var(--card)] transition-colors flex flex-col overflow-hidden">
+      {/* Order controls — top-left */}
+      <div className="absolute top-2 left-2 flex flex-col gap-0.5 z-10">
+        <button onClick={onMoveUp} disabled={isFirst} title="Move up"
+          className="p-1 rounded-lg bg-[var(--surface)]/80 text-[var(--text-2)] hover:text-[var(--primary)] disabled:opacity-25 transition-colors backdrop-blur-sm">
+          <ChevronUp size={13} />
+        </button>
+        <button onClick={onMoveDown} disabled={isLast} title="Move down"
+          className="p-1 rounded-lg bg-[var(--surface)]/80 text-[var(--text-2)] hover:text-[var(--primary)] disabled:opacity-25 transition-colors backdrop-blur-sm">
+          <ChevronDown size={13} />
+        </button>
+      </div>
 
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-1.5">
-          <span className="font-medium text-sm truncate">{u.name ?? u.email}</span>
-          {member.isHighlighted && (
-            <Star size={11} className="text-[var(--primary)] shrink-0" fill="currentColor" />
-          )}
-        </div>
-        {editing ? (
-          <input
-            autoFocus
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
-            className="mt-1 w-full px-2 py-1 text-xs rounded-lg border border-[var(--primary)] bg-[var(--surface)] focus:outline-none"
-          />
-        ) : (
-          <p className="text-xs text-[var(--primary)] mt-0.5 truncate">{member.communityRole}</p>
+      {/* Action controls — top-right */}
+      <div className="absolute top-2 right-2 flex gap-1 z-10">
+        {!editing && (
+          <>
+            <button onClick={() => setEditing(true)} title="Edit"
+              className="p-1.5 rounded-lg bg-[var(--surface)]/80 text-[var(--text-2)] hover:text-[var(--primary)] hover:bg-[var(--primary)]/10 transition-colors backdrop-blur-sm">
+              <Pencil size={13} />
+            </button>
+            <button onClick={remove} title="Remove"
+              className="p-1.5 rounded-lg bg-[var(--surface)]/80 text-[var(--text-2)] hover:text-[var(--danger)] hover:bg-[var(--danger)]/10 transition-colors backdrop-blur-sm">
+              <Trash2 size={13} />
+            </button>
+          </>
         )}
       </div>
 
-      {editing ? (
-        <div className="flex items-center gap-1 shrink-0">
-          <label className="flex items-center gap-1 text-xs text-[var(--text-2)] cursor-pointer">
+      {/* Card body */}
+      <div className="p-5 flex flex-col items-center text-center gap-3 flex-1">
+        {/* Avatar */}
+        <div className="relative w-20 h-20 rounded-full border-2 border-[var(--primary)] ring-4 ring-[var(--primary)]/10 overflow-hidden bg-[var(--surface)] flex items-center justify-center mt-4 shrink-0">
+          {u.photo ? (
+            <Image src={u.photo} alt={u.name ?? "Member"} fill className="object-cover" />
+          ) : (
+            <span className="font-heading text-2xl font-bold text-[var(--primary)]">
+              {(u.name ?? u.email)[0].toUpperCase()}
+            </span>
+          )}
+        </div>
+
+        {/* Name */}
+        <div className="w-full">
+          <p className="font-heading text-sm font-bold truncate">{u.name ?? "—"}</p>
+          {u.degreeProgramme && (
+            <p className="text-[var(--text-2)] text-xs mt-0.5 truncate">{u.degreeProgramme}</p>
+          )}
+        </div>
+
+        {/* Editable fields */}
+        {editing ? (
+          <div className="w-full space-y-2">
             <input
-              type="checkbox"
-              checked={highlighted}
-              onChange={(e) => setHighlighted(e.target.checked)}
-              className="accent-[var(--primary)]"
+              autoFocus
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              placeholder="Role (e.g. Organizer)"
+              className="w-full px-3 py-1.5 text-xs rounded-lg border border-[var(--primary)] bg-[var(--surface)] focus:outline-none text-center"
             />
-            Ambassador
-          </label>
-          <button onClick={saveEdits} disabled={saving} className="p-1.5 text-[var(--success)] hover:bg-[var(--success)]/10 rounded-lg">
-            <Check size={13} />
-          </button>
-          <button onClick={() => setEditing(false)} className="p-1.5 text-[var(--text-2)] hover:bg-[var(--surface)] rounded-lg">
-            <X size={13} />
-          </button>
-        </div>
-      ) : (
-        <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button onClick={() => setEditing(true)} className="p-1.5 text-[var(--text-2)] hover:text-[var(--primary)] hover:bg-[var(--primary)]/10 rounded-lg">
-            <Pencil size={13} />
-          </button>
-          <button onClick={remove} className="p-1.5 text-[var(--text-2)] hover:text-[var(--danger)] hover:bg-[var(--danger)]/10 rounded-lg">
-            <Trash2 size={13} />
-          </button>
-        </div>
-      )}
+            <textarea
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              placeholder="Short bio (optional)"
+              rows={3}
+              className="w-full px-3 py-1.5 text-xs rounded-lg border border-[var(--border)] bg-[var(--surface)] focus:outline-none focus:border-[var(--primary)] resize-none text-left"
+            />
+            {showHighlighted && (
+              <label className="flex items-center justify-center gap-1.5 text-xs cursor-pointer text-[var(--text-2)]">
+                <input
+                  type="checkbox"
+                  checked={highlighted}
+                  onChange={(e) => setHighlighted(e.target.checked)}
+                  className="accent-[var(--primary)]"
+                />
+                <Star size={11} className="text-[var(--primary)]" />
+                Mark as Campus Ambassador
+              </label>
+            )}
+            <div className="flex gap-2 justify-center">
+              <button onClick={() => { setEditing(false); setRole(member.communityRole); setBio(member.bio ?? ""); setHighlighted(member.isHighlighted); }}
+                className="flex items-center gap-1 px-3 py-1.5 text-xs rounded-lg border border-[var(--border)] text-[var(--text-2)] hover:text-[var(--text-1)] transition-colors">
+                <X size={12} /> Cancel
+              </button>
+              <button onClick={saveEdits} disabled={saving}
+                className="flex items-center gap-1 px-3 py-1.5 text-xs rounded-lg bg-[var(--primary)] text-black font-semibold hover:opacity-90 disabled:opacity-60 transition-opacity">
+                <Check size={12} /> {saving ? "Saving…" : "Save"}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="w-full space-y-1">
+            <p className="text-[var(--primary)] text-xs font-semibold flex items-center justify-center gap-1">
+              {member.isHighlighted && <Star size={10} fill="currentColor" />}
+              {member.communityRole}
+            </p>
+            {member.bio && (
+              <p className="text-[var(--text-2)] text-xs leading-relaxed line-clamp-3">{member.bio}</p>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
-// ─── AddMemberForm ────────────────────────────────────────
+// ─── AddMemberForm ─────────────────────────────────────────────────────────────
+
 function AddMemberForm({
   eventId,
+  showHighlighted,
   existingUserIds,
   onAdded,
   onCancel,
 }: {
   eventId: string | null;
+  showHighlighted: boolean;
   existingUserIds: string[];
   onAdded: (m: Member) => void;
   onCancel: () => void;
@@ -368,7 +514,7 @@ function AddMemberForm({
           eventId: eventId ?? undefined,
           communityRole: role.trim(),
           bio: bio.trim() || undefined,
-          isHighlighted,
+          isHighlighted: showHighlighted ? isHighlighted : false,
         }),
       });
       const data = await res.json();
@@ -404,11 +550,8 @@ function AddMemberForm({
             <div className="absolute left-0 right-0 top-full mt-1 z-20 bg-[var(--card)] border border-[var(--border)] rounded-xl shadow-xl overflow-hidden max-h-48 overflow-y-auto">
               {searching && <p className="text-xs text-[var(--text-2)] px-3 py-2">Searching…</p>}
               {results.map((u) => (
-                <button
-                  key={u._id}
-                  onClick={() => { setSelected(u); setResults([]); setQuery(""); }}
-                  className="w-full flex items-center gap-2 px-3 py-2 hover:bg-[var(--surface)] transition-colors text-left"
-                >
+                <button key={u._id} onClick={() => { setSelected(u); setResults([]); setQuery(""); }}
+                  className="w-full flex items-center gap-2 px-3 py-2 hover:bg-[var(--surface)] transition-colors text-left">
                   <Avatar src={u.photo} name={u.name ?? u.email} size="xs" />
                   <div className="min-w-0">
                     <p className="text-sm font-medium truncate">{u.name ?? "—"}</p>
@@ -427,7 +570,7 @@ function AddMemberForm({
       <input
         value={role}
         onChange={(e) => setRole(e.target.value)}
-        placeholder="Community role (e.g. Organizer, Co-host)"
+        placeholder="Role (e.g. Organizer, Co-host, Player)"
         className="w-full px-3 py-2 text-sm rounded-xl border border-[var(--border)] bg-[var(--surface)] focus:outline-none focus:border-[var(--primary)] transition-colors"
       />
 
@@ -439,16 +582,14 @@ function AddMemberForm({
         className="w-full px-3 py-2 text-sm rounded-xl border border-[var(--border)] bg-[var(--surface)] focus:outline-none focus:border-[var(--primary)] transition-colors resize-none"
       />
 
-      <label className="flex items-center gap-2 text-sm cursor-pointer">
-        <input
-          type="checkbox"
-          checked={isHighlighted}
-          onChange={(e) => setIsHighlighted(e.target.checked)}
-          className="accent-[var(--primary)]"
-        />
-        <Star size={13} className="text-[var(--primary)]" />
-        Mark as Campus Ambassador (featured hero card)
-      </label>
+      {showHighlighted && (
+        <label className="flex items-center gap-2 text-sm cursor-pointer">
+          <input type="checkbox" checked={isHighlighted} onChange={(e) => setIsHighlighted(e.target.checked)}
+            className="accent-[var(--primary)]" />
+          <Star size={13} className="text-[var(--primary)]" />
+          Mark as Campus Ambassador (featured hero card)
+        </label>
+      )}
 
       <div className="flex gap-2">
         <Button variant="outline" size="sm" onClick={onCancel}>Cancel</Button>

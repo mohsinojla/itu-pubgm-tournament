@@ -93,12 +93,12 @@ export default async function CommunityPage() {
           </section>
         )}
 
-        {/* Event sections */}
+        {/* Event sections — everyone gets the same card, sorted by order */}
         {events.map((event) => {
-          const eventAmbassadors = members.filter((m) => m.isHighlighted && m.eventId === event._id);
-          const eventRegular = members.filter((m) => !m.isHighlighted && m.eventId === event._id);
-          const allEventMembers = [...eventAmbassadors, ...eventRegular];
-          if (allEventMembers.length === 0) return null;
+          const eventMembers = members
+            .filter((m) => m.eventId === event._id)
+            .sort((a, b) => a.order - b.order);
+          if (eventMembers.length === 0) return null;
 
           return (
             <section key={event._id}>
@@ -107,7 +107,7 @@ export default async function CommunityPage() {
                   <div className="w-1 h-7 rounded-full bg-[var(--primary)]" />
                   <h2 className="font-heading text-2xl font-bold">{event.name}</h2>
                   <span className="text-xs text-[var(--text-2)] bg-[var(--surface)] border border-[var(--border)] px-2 py-0.5 rounded-full">
-                    {allEventMembers.length} {allEventMembers.length === 1 ? "member" : "members"}
+                    {eventMembers.length} {eventMembers.length === 1 ? "member" : "members"}
                   </span>
                 </div>
                 {event.description && (
@@ -115,19 +115,9 @@ export default async function CommunityPage() {
                 )}
               </div>
 
-              {/* Featured members within the event */}
-              {eventAmbassadors.length > 0 && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-                  {eventAmbassadors.map((m) => <FeaturedCard key={m._id} member={m} />)}
-                </div>
-              )}
-
-              {/* Regular members within the event */}
-              {eventRegular.length > 0 && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {eventRegular.map((m) => <MemberCard key={m._id} member={m} />)}
-                </div>
-              )}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {eventMembers.map((m) => <FeaturedCard key={m._id} member={m} />)}
+              </div>
             </section>
           );
         })}
@@ -271,9 +261,7 @@ function FeaturedCard({ member }: { member: PopulatedMember }) {
       </div>
       <div>
         <p className="font-heading text-base font-bold">{u.name ?? "—"}</p>
-        <p className="text-[var(--primary)] text-xs font-semibold mt-0.5 flex items-center gap-1 justify-center">
-          <Star size={10} fill="currentColor" /> {member.communityRole}
-        </p>
+        <p className="text-[var(--primary)] text-xs font-semibold mt-0.5">{member.communityRole}</p>
         {u.degreeProgramme && <p className="text-[var(--text-2)] text-xs mt-1">{u.degreeProgramme}</p>}
         {member.bio && <p className="text-[var(--text-2)] text-xs mt-2 leading-relaxed line-clamp-3">{member.bio}</p>}
       </div>
