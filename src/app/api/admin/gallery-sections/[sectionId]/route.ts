@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth/auth";
 import { connectDB } from "@/lib/db/mongoose";
 import GallerySection from "@/lib/db/models/GallerySection";
 import Gallery from "@/lib/db/models/Gallery";
+import CommunityMember from "@/lib/db/models/CommunityMember";
 import { isSuperAdmin, hasPermission } from "@/lib/auth/permissions";
 import { PERMISSIONS } from "@/lib/constants/permissions";
 
@@ -86,11 +87,11 @@ export async function DELETE(_request: Request, { params }: Params) {
       return NextResponse.json({ success: false, error: "Section not found" }, { status: 404 });
     }
 
-    // Clear sectionId from all Gallery items belonging to this section
-    await Gallery.updateMany(
-      { sectionId: section._id },
-      { $unset: { sectionId: "" } }
-    );
+    // Remove gallery media association + community members for this event
+    await Promise.all([
+      Gallery.updateMany({ sectionId: section._id }, { $unset: { sectionId: "" } }),
+      CommunityMember.deleteMany({ eventId: section._id }),
+    ]);
 
     await GallerySection.findByIdAndDelete(sectionId);
 
