@@ -27,5 +27,18 @@ export async function connectDB(): Promise<typeof mongoose> {
   }
 
   cached.conn = await cached.promise;
+
+  // Drop legacy single-field unique index on CommunityMember.userId that was
+  // replaced by the compound { userId, eventId } index. Mongoose never removes
+  // old indexes automatically, so this runs once per cold start and is a no-op
+  // once the index is gone.
+  try {
+    await cached.conn.connection.db
+      ?.collection("communitymembers")
+      .dropIndex("userId_1");
+  } catch {
+    // Index already gone or collection doesn't exist yet — ignore.
+  }
+
   return cached.conn;
 }
