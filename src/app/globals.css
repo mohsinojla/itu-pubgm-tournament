@@ -102,3 +102,65 @@ h1, h2, h3, h4, h5, h6 {
     linear-gradient(90deg, rgba(242, 163, 22, 0.03) 1px, transparent 1px);
   background-size: 40px 40px;
 }
+
+/* Animated gold gradient text */
+.gold-text-animated {
+  background: linear-gradient(90deg, #f2a316, #ffdb8a, #c89b3c, #f2a316);
+  background-size: 300% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer-gold 6s linear infinite;
+}
+
+@keyframes shimmer-gold {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 300% 50%; }
+}
+
+/* Slow rotation for the hero watermark */
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.animate-spin-slow {
+  animation: spin-slow 100s linear infinite;
+}
+
+/* PUBG-style shrinking drop-zone rings */
+@keyframes zone-pulse {
+  0% { transform: scale(0.8); opacity: 0.6; }
+  70% { opacity: 0.15; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+.zone-ring {
+  animation: zone-pulse 4.5s cubic-bezier(0.2, 0.6, 0.4, 1) infinite;
+}
+
+/* Breathing glow orbs */
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.35; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.1); }
+}
+.glow-pulse {
+  animation: glow-pulse 5s ease-in-out infinite;
+}
+
+/* Floating ambient particles */
+@keyframes float-particle {
+  0%, 100% { transform: translateY(0) translateX(0); opacity: 0.15; }
+  50% { transform: translateY(-26px) translateX(10px); opacity: 0.6; }
+}
+.particle {
+  animation: float-particle 7s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-spin-slow,
+  .zone-ring,
+  .glow-pulse,
+  .particle,
+  .gold-text-animated {
+    animation: none;
+  }
+}
