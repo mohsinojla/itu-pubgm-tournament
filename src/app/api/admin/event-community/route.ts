@@ -58,8 +58,16 @@ export async function POST(request: Request) {
 
     const populated = await member.populate("userId", "name photo email degreeProgramme");
     return NextResponse.json({ success: true, member: populated }, { status: 201 });
-  } catch (err) {
+  } catch (err: unknown) {
     console.error("POST /api/admin/event-community error:", err);
-    return NextResponse.json({ success: false, error: "Failed to add member" }, { status: 500 });
+    // Duplicate key (race condition or stale findOne check)
+    if (typeof err === "object" && err !== null && "code" in err && (err as { code: number }).code === 11000) {
+      return NextResponse.json(
+        { success: false, error: "This person is already in that community section" },
+        { status: 409 }
+      );
+    }
+    const msg = err instanceof Error ? err.message : "Failed to add member";
+    return NextResponse.json({ success: false, error: msg }, { status: 500 });
   }
 }

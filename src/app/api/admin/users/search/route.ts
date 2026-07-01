@@ -21,7 +21,6 @@ export async function GET(request: Request) {
   const regex = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
   const users = await User.find({
     $or: [{ name: regex }, { email: regex }],
-    profileCompleted: true,
   })
     .select("_id name email photo degreeProgramme")
     .limit(10)
