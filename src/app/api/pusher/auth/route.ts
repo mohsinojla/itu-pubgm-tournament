@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth/auth";
+import { connectDB } from "@/lib/db/mongoose";
+import User from "@/lib/db/models/User";
 import { pusherServer } from "@/lib/pusher/server";
 
 export async function POST(request: Request) {
@@ -21,6 +23,15 @@ export async function POST(request: Request) {
   if (channelName.startsWith("private-user-")) {
     const userId = channelName.replace("private-user-", "");
     if (userId !== session.user.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+  }
+
+  if (channelName.startsWith("private-team-")) {
+    const teamId = channelName.replace("private-team-", "");
+    await connectDB();
+    const currentUser = await User.findById(session.user.id).select("teamId");
+    if (currentUser?.teamId?.toString() !== teamId) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
   }

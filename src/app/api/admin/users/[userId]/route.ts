@@ -66,9 +66,15 @@ export async function DELETE(
   const user = await User.findById(userId);
   if (!user) return NextResponse.json({ success: false, error: "User not found" }, { status: 404 });
 
-  // Only super_admin can delete another super_admin (and even then it's guarded above for self)
   if (user.role === "super_admin") {
     return NextResponse.json({ success: false, error: "Cannot delete the super admin account" }, { status: 403 });
+  }
+
+  // Only the super admin can remove another admin's account — a regular
+  // admin (MANAGE_PLAYERS is enough to reach this route) must not be able
+  // to delete a fellow admin, only players.
+  if (user.role === "admin" && !isSuperAdmin(session.user)) {
+    return NextResponse.json({ success: false, error: "Only the super admin can remove an admin account" }, { status: 403 });
   }
 
   // Remove from team

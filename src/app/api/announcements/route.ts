@@ -6,6 +6,7 @@ import { isSuperAdmin, hasPermission } from "@/lib/auth/permissions";
 import { PERMISSIONS } from "@/lib/constants/permissions";
 import { pusherServer } from "@/lib/pusher/server";
 import { PUSHER_CHANNELS, PUSHER_EVENTS } from "@/lib/constants/pusher-events";
+import { sanitizeRichText } from "@/lib/utils/sanitizeHtml";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -51,7 +52,7 @@ export async function POST(request: Request) {
 
     const announcement = await Announcement.create({
       title: title.trim(),
-      body,
+      body: sanitizeRichText(body),
       isPinned: isPinned ?? false,
       postedBy: session.user.id,
       category: category ?? "general",

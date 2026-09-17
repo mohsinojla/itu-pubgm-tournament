@@ -4,6 +4,7 @@ import { connectDB } from "@/lib/db/mongoose";
 import Rules from "@/lib/db/models/Rules";
 import { isSuperAdmin, hasPermission } from "@/lib/auth/permissions";
 import { PERMISSIONS } from "@/lib/constants/permissions";
+import { sanitizeRichText } from "@/lib/utils/sanitizeHtml";
 
 export async function GET() {
   await connectDB();
@@ -32,7 +33,7 @@ export async function PUT(request: Request) {
   await connectDB();
   const rules = await Rules.findOneAndUpdate(
     {},
-    { content, lastEditedBy: session.user.id },
+    { content: sanitizeRichText(content), lastEditedBy: session.user.id },
     { upsert: true, new: true }
   );
 

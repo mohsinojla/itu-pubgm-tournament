@@ -4,6 +4,7 @@ import { connectDB } from "@/lib/db/mongoose";
 import Announcement from "@/lib/db/models/Announcement";
 import { isSuperAdmin, hasPermission } from "@/lib/auth/permissions";
 import { PERMISSIONS } from "@/lib/constants/permissions";
+import { sanitizeRichText } from "@/lib/utils/sanitizeHtml";
 
 function canManage(user: { role: string; permissions: string[] }) {
   return isSuperAdmin(user) || hasPermission(user, PERMISSIONS.POST_ANNOUNCEMENTS);
@@ -24,6 +25,9 @@ export async function PATCH(
   const updates: Record<string, unknown> = {};
   for (const key of allowed) {
     if (body[key] !== undefined) updates[key] = body[key];
+  }
+  if (typeof updates.body === "string") {
+    updates.body = sanitizeRichText(updates.body);
   }
 
   await connectDB();
