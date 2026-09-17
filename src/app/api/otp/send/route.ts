@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { connectDB } from "@/lib/db/mongoose";
 import OTPToken from "@/lib/db/models/OTPToken";
-import { resend, FROM_EMAIL } from "@/lib/resend/client";
+import { sendMail } from "@/lib/mail/client";
 
 const OTP_EXPIRY_MINUTES = 10;
 const MAX_OTP_PER_HOUR = 3;
@@ -54,11 +54,7 @@ export async function POST(request: Request) {
       expiresAt,
     });
 
-    // Send email — the SDK resolves with { data, error } instead of throwing
-    // on API-level failures (invalid sender/recipient, quota, etc.), so that
-    // has to be checked explicitly or a failed send silently reports success.
-    const { error: sendError } = await resend.emails.send({
-      from: FROM_EMAIL,
+    const { error: sendError } = await sendMail({
       to: normalizedEmail,
       subject: "ITU × PUBGM Supremacy Cup — Email Verification",
       html: `
@@ -81,7 +77,7 @@ export async function POST(request: Request) {
       // Delete the token so this failed attempt doesn't burn one of the
       // 3-per-hour slots for an OTP the user could never have received.
       await OTPToken.findByIdAndDelete(token._id);
-      console.error("OTP send error (Resend):", sendError);
+      console.error("OTP send error (Gmail SMTP):", sendError);
       return NextResponse.json(
         { success: false, error: "Failed to send OTP. Please try again in a moment." },
         { status: 502 }
