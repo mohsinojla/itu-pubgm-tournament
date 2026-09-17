@@ -108,7 +108,7 @@ export default function PlayersTable({ players }: { players: Player[] }) {
         <button
           onClick={handleExport}
           disabled={exporting}
-          title="Export players with teams to Excel"
+          title="Export all players and teams to Excel (two sheets)"
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-sm hover:border-[var(--primary)]/50 hover:text-[var(--primary)] transition-colors disabled:opacity-50 shrink-0"
         >
           <Download size={14} />
