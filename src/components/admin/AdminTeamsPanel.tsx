@@ -62,9 +62,8 @@ export default function AdminTeamsPanel({ initialTeams, isSuperAdmin }: { initia
 
   async function renameTeam(teamId: string) {
     const trimmed = renameValue.trim();
-    const words = trimmed.split(/\s+/).filter(Boolean);
-    if (words.length !== 2 || trimmed.length >= 25) {
-      toast.error("Team name must be exactly 2 words and less than 25 characters");
+    if (trimmed.length < 2 || trimmed.length > 24) {
+      toast.error("Team name must be 2-24 characters");
       return;
     }
     setLoadingId(teamId);

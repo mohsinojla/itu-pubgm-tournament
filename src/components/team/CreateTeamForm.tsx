@@ -107,7 +107,7 @@ export default function CreateTeamForm() {
         label="Team Name"
         placeholder="e.g. Shadow Wolves"
         error={errors.name?.message}
-        hint="Exactly 2 words, less than 25 characters (e.g. Shadow Wolves)"
+        hint="2-24 characters (e.g. Shadow Wolves or Bigetron)"
         required
         {...register("name")}
       />

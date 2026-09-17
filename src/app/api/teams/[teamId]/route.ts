@@ -61,10 +61,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ te
   }
   if (updates.name) {
     const trimmed = (updates.name as string).trim();
-    const words = trimmed.split(/\s+/).filter(Boolean);
-    if (words.length !== 2 || trimmed.length >= 25) {
+    if (trimmed.length < 2 || trimmed.length > 24) {
       return NextResponse.json(
-        { success: false, error: "Team name must be exactly 2 words and less than 25 characters" },
+        { success: false, error: "Team name must be 2-24 characters" },
         { status: 400 }
       );
     }
