@@ -15,7 +15,7 @@ interface Stats {
     pubgName?: string;
     isVerifiedPlayer?: boolean;
   };
-  teamId?: { name?: string; tag?: string };
+  teamId?: { name?: string };
   matchesPlayed: number;
   totalKills: number;
   totalDeaths: number;
@@ -165,7 +165,7 @@ export default function StatsTable({
                     </td>
                     <td className="px-4 py-3">
                       {s.teamId ? (
-                        <span className="text-xs font-mono">[{s.teamId.tag}]</span>
+                        <span className="text-xs">{s.teamId.name}</span>
                       ) : (
                         <span className="text-xs text-[var(--text-2)]">—</span>
                       )}

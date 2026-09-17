@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
 
     const stats = await PlayerStats.find(filter)
       .populate("userId", "name pubgName photo rollNumber teamId")
-      .populate("teamId", "name tag")
+      .populate("teamId", "name")
       .sort({ totalKills: -1 })
       .lean();
 

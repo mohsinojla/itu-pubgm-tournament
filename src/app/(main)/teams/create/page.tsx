@@ -1,13 +1,23 @@
 import { auth } from "@/lib/auth/auth";
 import { redirect } from "next/navigation";
+import { connectDB } from "@/lib/db/mongoose";
+import User from "@/lib/db/models/User";
 import CreateTeamForm from "@/components/team/CreateTeamForm";
 import PageHero from "@/components/common/PageHero";
+
+export const dynamic = "force-dynamic";
 
 export default async function CreateTeamPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
-  if (!session.user.profileCompleted) redirect("/profile?onboarding=true");
-  if (session.user.teamId) redirect(`/teams/${session.user.teamId}`);
+
+  // Read team membership fresh from the DB rather than the session token —
+  // the JWT only refreshes at sign-in, so a player who just left/was removed
+  // from a team would otherwise get bounced back to their old (stale) team.
+  await connectDB();
+  const user = await User.findById(session.user.id).select("profileCompleted teamId");
+  if (!user?.profileCompleted) redirect("/profile?onboarding=true");
+  if (user.teamId) redirect(`/teams/${user.teamId}`);
 
   return (
     <>

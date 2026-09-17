@@ -33,11 +33,18 @@ export default async function HomePage() {
     getHomeData(),
   ]);
 
+  // Read team membership fresh from the DB rather than the session token —
+  // the JWT only refreshes at sign-in, so a player who just left/was removed
+  // from a team would otherwise still see themselves as on their old team.
+  const currentUser = session?.user?.id
+    ? await User.findById(session.user.id).select("profileCompleted teamId").lean()
+    : null;
+
   const sessionSlice = session?.user?.id
     ? {
         id: session.user.id,
-        profileCompleted: session.user.profileCompleted,
-        teamId: session.user.teamId,
+        profileCompleted: currentUser?.profileCompleted,
+        teamId: currentUser?.teamId?.toString(),
       }
     : null;
 
@@ -119,21 +126,21 @@ export default async function HomePage() {
           <h2 className="font-heading text-3xl font-bold mb-3 gold-text">Ready to compete?</h2>
           <p className="text-[var(--text-2)] mb-8">Register, form your team, and make history at ITU.</p>
           <div className="flex flex-wrap items-center justify-center gap-4">
-            {!session?.user?.id ? (
+            {!sessionSlice ? (
               <>
                 <Link href="/register" className="px-6 py-3 rounded-xl bg-[var(--primary)] text-black font-semibold hover:bg-[var(--primary-dim)] hover:scale-105 active:scale-95 transition-all">Get Started</Link>
                 <Link href="/login" className="px-6 py-3 rounded-xl border border-[var(--border)] hover:border-[var(--primary-dim)] hover:scale-105 active:scale-95 transition-all">Login</Link>
               </>
-            ) : !session.user.profileCompleted ? (
+            ) : !sessionSlice.profileCompleted ? (
               <Link href="/profile" className="px-6 py-3 rounded-xl bg-[var(--primary)] text-black font-semibold hover:bg-[var(--primary-dim)] hover:scale-105 active:scale-95 transition-all">Complete Your Profile</Link>
-            ) : !session.user.teamId ? (
+            ) : !sessionSlice.teamId ? (
               <>
                 <Link href="/teams/create" className="px-6 py-3 rounded-xl bg-[var(--primary)] text-black font-semibold hover:bg-[var(--primary-dim)] hover:scale-105 active:scale-95 transition-all">Create a Team</Link>
                 <Link href="/teams" className="px-6 py-3 rounded-xl border border-[var(--border)] hover:border-[var(--primary-dim)] hover:scale-105 active:scale-95 transition-all">Browse Teams</Link>
               </>
             ) : (
               <>
-                <Link href={`/teams/${session.user.teamId}`} className="px-6 py-3 rounded-xl bg-[var(--primary)] text-black font-semibold hover:bg-[var(--primary-dim)] hover:scale-105 active:scale-95 transition-all">My Team</Link>
+                <Link href={`/teams/${sessionSlice.teamId}`} className="px-6 py-3 rounded-xl bg-[var(--primary)] text-black font-semibold hover:bg-[var(--primary-dim)] hover:scale-105 active:scale-95 transition-all">My Team</Link>
                 <Link href="/rules" className="px-6 py-3 rounded-xl border border-[var(--border)] hover:border-[var(--primary-dim)] hover:scale-105 active:scale-95 transition-all">Read the Rules</Link>
               </>
             )}

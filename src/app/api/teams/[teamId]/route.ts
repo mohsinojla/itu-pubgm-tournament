@@ -78,10 +78,15 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ te
     );
     return NextResponse.json({ success: true, team: updated });
   } catch (error: unknown) {
-    const mongoError = error as { code?: number };
+    const mongoError = error as { code?: number; keyPattern?: Record<string, unknown> };
     if (mongoError.code === 11000) {
-      return NextResponse.json({ success: false, error: "Team name already taken" }, { status: 409 });
+      // Identify which unique field actually collided instead of assuming it's always the name
+      const field = mongoError.keyPattern ? Object.keys(mongoError.keyPattern)[0] : undefined;
+      const message = field === "name" ? "Team name already taken" : "Could not update team — please try again";
+      console.error("PATCH /api/teams/[teamId] duplicate key on field:", field, error);
+      return NextResponse.json({ success: false, error: message }, { status: 409 });
     }
+    console.error("PATCH /api/teams/[teamId] error:", error);
     return NextResponse.json({ success: false, error: "Update failed" }, { status: 500 });
   }
 }

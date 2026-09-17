@@ -99,10 +99,16 @@ export async function POST(request: Request) {
   } catch (error: unknown) {
     const mongoError = error as { code?: number; keyPattern?: Record<string, unknown> };
     if (mongoError.code === 11000) {
-      return NextResponse.json(
-        { success: false, error: "Team name is already taken" },
-        { status: 409 }
-      );
+      // Identify which unique field actually collided instead of assuming it's always the name
+      const field = mongoError.keyPattern ? Object.keys(mongoError.keyPattern)[0] : undefined;
+      const message =
+        field === "name"
+          ? "Team name is already taken"
+          : field === "teamId"
+          ? "Team ID collision — please try again"
+          : "Could not create team — please try again";
+      console.error("POST /api/teams duplicate key on field:", field, error);
+      return NextResponse.json({ success: false, error: message }, { status: 409 });
     }
     console.error("POST /api/teams error:", error);
     return NextResponse.json({ success: false, error: "Failed to create team" }, { status: 500 });

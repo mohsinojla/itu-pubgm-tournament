@@ -37,7 +37,7 @@ export default async function StatisticsPage() {
       .lean(),
     PlayerStats.find(admin ? {} : { isHidden: { $ne: true } })
       .populate("userId", "name pubgName photo isVerifiedPlayer")
-      .populate("teamId", "name tag")
+      .populate("teamId", "name")
       .sort({ totalKills: -1 })
       .lean(),
   ]);

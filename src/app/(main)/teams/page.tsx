@@ -1,5 +1,6 @@
 import { connectDB } from "@/lib/db/mongoose";
 import Team from "@/lib/db/models/Team";
+import User from "@/lib/db/models/User";
 import PageHero from "@/components/common/PageHero";
 import TeamCard from "@/components/team/TeamCard";
 import Link from "next/link";
@@ -11,13 +12,21 @@ export const dynamic = "force-dynamic";
 export default async function TeamsPage() {
   const [session] = await Promise.all([auth(), connectDB()]);
 
-  const teams = await Team.find()
-    .sort({ createdAt: -1 })
-    .populate("leaderId", "name photo pubgName")
-    .populate("members.userId", "name photo pubgName isVerifiedPlayer")
-    .lean();
+  const [teams, currentUser] = await Promise.all([
+    Team.find()
+      .sort({ createdAt: -1 })
+      .populate("leaderId", "name photo pubgName")
+      .populate("members.userId", "name photo pubgName isVerifiedPlayer")
+      .lean(),
+    session?.user?.id
+      ? User.findById(session.user.id).select("profileCompleted teamId").lean()
+      : null,
+  ]);
 
-  const canCreate = session?.user?.profileCompleted && !session?.user?.teamId;
+  // Read fresh from the DB — the session JWT only refreshes at sign-in, so a
+  // player who just left/was removed from a team would otherwise still be
+  // hidden from "Create Team" until they log out and back in.
+  const canCreate = !!currentUser?.profileCompleted && !currentUser?.teamId;
 
   return (
     <>
