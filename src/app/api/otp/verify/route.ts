@@ -69,6 +69,8 @@ export async function POST(request: Request) {
     // Create or update user
     const isSuperAdmin = normalizedEmail === SUPER_ADMIN_EMAIL;
     let user = await User.findOne({ email: normalizedEmail });
+    const isNewUser = !user;
+    const hadPasswordAlready = !!user?.password;
 
     if (!user) {
       if (!password) {
@@ -96,7 +98,19 @@ export async function POST(request: Request) {
       await user.save();
     }
 
-    return NextResponse.json({ success: true, userId: user._id.toString() });
+    // existingAccountLinked: this email already had an account (e.g. created
+    // via Google) and a password was just attached/reset on it — the client
+    // needs this to avoid claiming "Account created!" for an account that
+    // already existed, which is what confused a user into thinking they'd
+    // made a new account when they'd actually just reset their Google
+    // account's password.
+    return NextResponse.json({
+      success: true,
+      userId: user._id.toString(),
+      isNewUser,
+      existingAccountLinked: !isNewUser && !!password,
+      hadPasswordAlready,
+    });
   } catch (error) {
     console.error("OTP verify error:", error);
     return NextResponse.json(

@@ -46,7 +46,11 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
           name: user.name,
           image: user.photo,
           role: user.role,
-          permissions: user.permissions,
+          // Spread into a plain array — a Mongoose document's array field is
+          // a MongooseArray, not a real Array, and structuredClone() (used
+          // internally by the JWT encoder) throws on it with a DataCloneError,
+          // silently failing the whole sign-in.
+          permissions: [...user.permissions],
           profileCompleted: user.profileCompleted,
           isEmailVerified: user.isEmailVerified,
           teamId: user.teamId?.toString(),
@@ -114,7 +118,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
           if (dbUser) {
             token.id = dbUser._id.toString();
             token.role = dbUser.role;
-            token.permissions = dbUser.permissions;
+            token.permissions = [...dbUser.permissions];
             token.profileCompleted = dbUser.profileCompleted;
             token.isEmailVerified = dbUser.isEmailVerified;
             token.teamId = dbUser.teamId?.toString();
@@ -137,7 +141,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         const dbUser = await User.findById(token.id);
         if (dbUser) {
           token.role = dbUser.role;
-          token.permissions = dbUser.permissions;
+          token.permissions = [...dbUser.permissions];
           token.profileCompleted = dbUser.profileCompleted;
           token.isEmailVerified = dbUser.isEmailVerified;
           token.teamId = dbUser.teamId?.toString();

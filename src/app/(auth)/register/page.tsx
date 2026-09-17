@@ -44,6 +44,14 @@ export default function RegisterPage() {
       if (data.success) {
         setOtpSent(true);
         toast.success("OTP sent to your email!");
+        if (data.existingAccount?.provider === "google") {
+          toast(
+            data.existingAccount.hasPassword
+              ? "This email already has a Google account — continuing will reset its password. You can also just use “Continue with Google” instead."
+              : "This email already has a Google account — continuing will add a password to it as an extra way to sign in. You can also just use “Continue with Google” instead.",
+            { icon: "ℹ️", duration: 8000 }
+          );
+        }
       } else {
         toast.error(data.error ?? "Failed to send OTP");
       }
@@ -85,8 +93,15 @@ export default function RegisterPage() {
       });
 
       if (result?.error) {
-        toast.error("Account created! Please log in.");
+        toast.error("Password set! Please log in.");
         router.push("/login");
+      } else if (verifyData.existingAccountLinked) {
+        toast.success(
+          verifyData.hadPasswordAlready
+            ? "Password reset! You can now sign in with email + password, or with Google."
+            : "Password added! This email already had an account — you can now sign in with email + password, or with Google."
+        );
+        router.push("/profile?onboarding=true");
       } else {
         toast.success("Account created successfully!");
         router.push("/profile?onboarding=true");

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { connectDB } from "@/lib/db/mongoose";
 import OTPToken from "@/lib/db/models/OTPToken";
+import User from "@/lib/db/models/User";
 import { sendMail } from "@/lib/mail/client";
 
 const OTP_EXPIRY_MINUTES = 10;
@@ -44,6 +45,14 @@ export async function POST(request: Request) {
       );
     }
 
+    // Let the client warn upfront if this email already has an account
+    // (e.g. created via Google) rather than silently attaching/resetting a
+    // password on it after the fact, with no explanation.
+    const existingUser = await User.findOne({ email: normalizedEmail }).select("provider password");
+    const existingAccount = existingUser
+      ? { provider: existingUser.provider, hasPassword: !!existingUser.password }
+      : null;
+
     const otp = generateOTP();
     const hashedOTP = await bcrypt.hash(otp, 10);
     const expiresAt = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000);
@@ -84,7 +93,7 @@ export async function POST(request: Request) {
       );
     }
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, existingAccount });
   } catch (error) {
     console.error("OTP send error:", error);
     return NextResponse.json(
