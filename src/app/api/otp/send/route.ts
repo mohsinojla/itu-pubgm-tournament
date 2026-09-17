@@ -48,14 +48,16 @@ export async function POST(request: Request) {
     const hashedOTP = await bcrypt.hash(otp, 10);
     const expiresAt = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000);
 
-    await OTPToken.create({
+    const token = await OTPToken.create({
       email: normalizedEmail,
       otp: hashedOTP,
       expiresAt,
     });
 
-    // Send email
-    await resend.emails.send({
+    // Send email — the SDK resolves with { data, error } instead of throwing
+    // on API-level failures (invalid sender/recipient, quota, etc.), so that
+    // has to be checked explicitly or a failed send silently reports success.
+    const { error: sendError } = await resend.emails.send({
       from: FROM_EMAIL,
       to: normalizedEmail,
       subject: "ITU × PUBGM Supremacy Cup — Email Verification",
@@ -74,6 +76,17 @@ export async function POST(request: Request) {
         </div>
       `,
     });
+
+    if (sendError) {
+      // Delete the token so this failed attempt doesn't burn one of the
+      // 3-per-hour slots for an OTP the user could never have received.
+      await OTPToken.findByIdAndDelete(token._id);
+      console.error("OTP send error (Resend):", sendError);
+      return NextResponse.json(
+        { success: false, error: "Failed to send OTP. Please try again in a moment." },
+        { status: 502 }
+      );
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {
