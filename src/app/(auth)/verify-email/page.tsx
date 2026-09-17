@@ -4,7 +4,6 @@ import { useState, useRef, Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams, useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
 import toast from "react-hot-toast";
 import { MailCheck, RefreshCw } from "lucide-react";
 import Button from "@/components/ui/Button";
@@ -13,7 +12,6 @@ function VerifyEmailContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const email = searchParams.get("email") ?? "";
-  const password = searchParams.get("password") ?? "";
 
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [verifying, setVerifying] = useState(false);
@@ -55,23 +53,11 @@ function VerifyEmailContent() {
       const res = await fetch("/api/otp/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, otp: code, ...(password && { password }) }),
+        body: JSON.stringify({ email, otp: code }),
       });
       const data = await res.json();
       if (!data.success) { toast.error(data.error ?? "Verification failed"); return; }
 
-      if (password) {
-        const result = await signIn("credentials", {
-          email,
-          password,
-          redirect: false,
-        });
-        if (!result?.error) {
-          toast.success("Email verified! Complete your profile.");
-          router.push("/profile?onboarding=true");
-          return;
-        }
-      }
       toast.success("Email verified! Please log in.");
       router.push("/login");
     } finally {

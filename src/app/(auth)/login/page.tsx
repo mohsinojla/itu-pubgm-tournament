@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useForm } from "react-hook-form";
@@ -11,6 +11,15 @@ import toast from "react-hot-toast";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import { loginSchema, type LoginInput } from "@/lib/validators/user.schema";
+
+const OAUTH_ERROR_MESSAGES: Record<string, string> = {
+  OAuthSignin: "Couldn't start Google sign-in. Please try again.",
+  OAuthCallback: "Google sign-in failed to complete. Please try again.",
+  OAuthCreateAccount: "Couldn't create an account from your Google profile.",
+  OAuthAccountNotLinked: "This email is already registered with a password — sign in with your password instead, or use the same method you used before.",
+  AccessDenied: "Access was denied by Google.",
+  Configuration: "Sign-in is temporarily misconfigured. Please try again shortly.",
+};
 
 export default function LoginPage() {
   return (
@@ -25,6 +34,14 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") ?? "/profile";
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const error = searchParams.get("error");
+    if (!error) return;
+    toast.error(OAUTH_ERROR_MESSAGES[error] ?? "Sign-in failed. Please try again.");
+    router.replace("/login");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   const {
     register,

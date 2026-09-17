@@ -17,6 +17,11 @@ export const config = {
     "/admin/:path*",
     "/profile/:path*",
     "/teams/create/:path*",
-    "/((?!_next/static|_next/image|favicon.ico|public).*)",
+    // api/auth is excluded — it has its own dedicated route handler, and
+    // also running auth() as middleware against it double-invokes NextAuth
+    // for the same request (observed as two different CSRF-token cookies
+    // set on one /api/auth/csrf response), which can corrupt OAuth state
+    // validation and break Google sign-in.
+    "/((?!api/auth|_next/static|_next/image|favicon.ico|public).*)",
   ],
 };
