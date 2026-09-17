@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import { Shield, EyeOff, Eye, Trash2, ExternalLink, Search, Download } from "lucide-react";
+import { EyeOff, Eye, Trash2, ExternalLink, Search, Download } from "lucide-react";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 
@@ -17,8 +17,8 @@ interface Player {
   pubgId?: string;
   pubgName?: string;
   rollNumber?: string;
+  whatsapp?: string;
   role: string;
-  isVerifiedPlayer?: boolean;
   statsHidden?: boolean;
   degreeProgramme?: string;
   semester?: number;
@@ -57,7 +57,8 @@ export default function PlayersTable({ players }: { players: Player[] }) {
       p.name?.toLowerCase().includes(q) ||
       p.email.toLowerCase().includes(q) ||
       p.pubgName?.toLowerCase().includes(q) ||
-      p.rollNumber?.toLowerCase().includes(q)
+      p.rollNumber?.toLowerCase().includes(q) ||
+      p.whatsapp?.toLowerCase().includes(q)
     );
   });
 
@@ -126,6 +127,7 @@ export default function PlayersTable({ players }: { players: Player[] }) {
                 <th className="px-4 py-3 text-left">Player</th>
                 <th className="px-4 py-3 text-left">PUBG</th>
                 <th className="px-4 py-3 text-left">Roll No</th>
+                <th className="px-4 py-3 text-left">Contact</th>
                 <th className="px-4 py-3 text-left">Degree</th>
                 <th className="px-4 py-3 text-left">Status</th>
                 <th className="px-4 py-3 text-right">Actions</th>
@@ -157,12 +159,25 @@ export default function PlayersTable({ players }: { players: Player[] }) {
                   </td>
                   <td className="px-4 py-3 text-xs">{player.rollNumber ?? "—"}</td>
                   <td className="px-4 py-3">
+                    {player.whatsapp ? (
+                      <a
+                        href={`https://wa.me/${player.whatsapp.replace(/\D/g, "")}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs font-mono hover:text-[var(--primary)] transition-colors"
+                      >
+                        {player.whatsapp}
+                      </a>
+                    ) : (
+                      <span className="text-xs text-[var(--text-2)]">—</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3">
                     <p className="text-xs truncate max-w-[120px]">{player.degreeProgramme ?? "—"}</p>
                     {player.semester && <p className="text-[10px] text-[var(--text-2)]">Sem {player.semester}</p>}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex flex-col gap-1">
-                      {player.isVerifiedPlayer && <Badge variant="success" className="text-[10px] w-fit">Verified</Badge>}
                       {player.statsHidden && <Badge variant="warning" className="text-[10px] w-fit">Stats Hidden</Badge>}
                       {player.teamId && <Badge variant="blue" className="text-[10px] w-fit">In Team</Badge>}
                     </div>
@@ -176,25 +191,6 @@ export default function PlayersTable({ players }: { players: Player[] }) {
                       >
                         <ExternalLink size={14} />
                       </Link>
-
-                      <button
-                        onClick={() =>
-                          patchPlayer(
-                            player._id,
-                            { isVerifiedPlayer: !player.isVerifiedPlayer },
-                            player.isVerifiedPlayer ? "Verification removed" : "Player verified!"
-                          )
-                        }
-                        disabled={loading !== null}
-                        title={player.isVerifiedPlayer ? "Remove verified badge" : "Mark as verified"}
-                        className={`p-1.5 rounded-lg transition-colors ${
-                          player.isVerifiedPlayer
-                            ? "text-[var(--success)] hover:bg-[var(--success)]/10"
-                            : "text-[var(--text-2)] hover:text-[var(--success)] hover:bg-[var(--success)]/10"
-                        }`}
-                      >
-                        <Shield size={14} />
-                      </button>
 
                       <button
                         onClick={() =>

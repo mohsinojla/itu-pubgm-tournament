@@ -13,8 +13,8 @@ export async function POST(request: Request) {
   try {
     const { folder, resourceType } = await request.json();
 
-    // Gallery uploads are admin-only; avatar uploads are for all authenticated users
-    if (folder === "gallery") {
+    // Gallery/prize uploads are admin-only; avatar uploads are for all authenticated users
+    if (folder === "gallery" || folder === "prizes") {
       const isAdmin =
         isSuperAdmin(session.user) ||
         hasPermission(session.user, PERMISSIONS.MANAGE_GALLERY);

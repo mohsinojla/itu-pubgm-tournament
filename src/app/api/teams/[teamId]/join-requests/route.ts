@@ -4,6 +4,9 @@ import { connectDB } from "@/lib/db/mongoose";
 import Team from "@/lib/db/models/Team";
 import JoinRequest from "@/lib/db/models/JoinRequest";
 import User from "@/lib/db/models/User";
+import Notification from "@/lib/db/models/Notification";
+import { pusherServer } from "@/lib/pusher/server";
+import { PUSHER_CHANNELS, PUSHER_EVENTS } from "@/lib/constants/pusher-events";
 
 export async function GET(_req: Request, { params }: { params: Promise<{ teamId: string }> }) {
   const session = await auth();
@@ -87,6 +90,22 @@ export async function POST(request: Request, { params }: { params: Promise<{ tea
       message: message?.trim() || undefined,
       status: "pending",
     });
+
+    // Notify the team leader so the request doesn't sit unnoticed
+    await Notification.create({
+      userId: team.leaderId,
+      type: "join_request",
+      title: "New Join Request",
+      message: `${session.user.name ?? "A player"} wants to join your team.`,
+      link: `/teams/${teamId}`,
+      relatedId: joinRequest._id,
+    });
+
+    await pusherServer.trigger(
+      PUSHER_CHANNELS.user(team.leaderId.toString()),
+      PUSHER_EVENTS.NOTIFICATION_NEW,
+      { type: "join_request" }
+    );
 
     return NextResponse.json({ success: true, joinRequest }, { status: 201 });
   } catch (error) {

@@ -33,12 +33,13 @@ interface Props {
   items: GalleryItem[];
   sections: GallerySection[];
   isAdmin: boolean;
+  canDelete?: boolean;
 }
 
 // ─────────────────────────────────────────────
 // Root component — switches between layouts
 // ─────────────────────────────────────────────
-export default function GalleryGrid({ items, sections, isAdmin }: Props) {
+export default function GalleryGrid({ items, sections, isAdmin, canDelete = false }: Props) {
   const [lightboxItem, setLightboxItem] = useState<GalleryItem | null>(null);
 
   return (
@@ -48,6 +49,7 @@ export default function GalleryGrid({ items, sections, isAdmin }: Props) {
           items={items}
           sections={sections}
           onPreview={setLightboxItem}
+          canDelete={canDelete}
         />
       ) : (
         <PublicGalleryView
@@ -156,10 +158,12 @@ function AdminGalleryView({
   items,
   sections,
   onPreview,
+  canDelete,
 }: {
   items: GalleryItem[];
   sections: GallerySection[];
   onPreview: (item: GalleryItem) => void;
+  canDelete: boolean;
 }) {
   const router = useRouter();
   const [showCreate, setShowCreate] = useState(false);
@@ -245,6 +249,7 @@ function AdminGalleryView({
           section={section}
           items={items.filter((i) => i.sectionId === section._id)}
           onPreview={onPreview}
+          canDelete={canDelete}
         />
       ))}
 
@@ -254,7 +259,7 @@ function AdminGalleryView({
           <h3 className="font-heading font-semibold text-[var(--text-2)] text-sm uppercase tracking-wide">
             Unsorted Media ({unsorted.length})
           </h3>
-          <MediaGrid items={unsorted} onPreview={onPreview} isAdmin />
+          <MediaGrid items={unsorted} onPreview={onPreview} isAdmin={canDelete} />
         </div>
       )}
     </div>
@@ -265,10 +270,12 @@ function AdminEventCard({
   section,
   items,
   onPreview,
+  canDelete,
 }: {
   section: GallerySection;
   items: GalleryItem[];
   onPreview: (item: GalleryItem) => void;
+  canDelete: boolean;
 }) {
   const router = useRouter();
   const [expanded, setExpanded] = useState(true);
@@ -348,13 +355,15 @@ function AdminEventCard({
           >
             <Upload size={14} />
           </button>
-          <button
-            onClick={deleteEvent}
-            title="Delete event"
-            className="p-1.5 rounded-lg text-[var(--text-2)] hover:text-[var(--danger)] hover:bg-[var(--danger)]/10 transition-colors"
-          >
-            <Trash2 size={14} />
-          </button>
+          {canDelete && (
+            <button
+              onClick={deleteEvent}
+              title="Delete event"
+              className="p-1.5 rounded-lg text-[var(--text-2)] hover:text-[var(--danger)] hover:bg-[var(--danger)]/10 transition-colors"
+            >
+              <Trash2 size={14} />
+            </button>
+          )}
           <button
             onClick={() => setExpanded(!expanded)}
             className="p-1.5 rounded-lg text-[var(--text-2)] hover:bg-[var(--surface)] transition-colors"
@@ -382,7 +391,7 @@ function AdminEventCard({
               No media yet. Click <Upload size={12} className="inline" /> above to upload.
             </div>
           ) : (
-            <MediaGrid items={items} onPreview={onPreview} isAdmin />
+            <MediaGrid items={items} onPreview={onPreview} isAdmin={canDelete} />
           )}
         </div>
       )}
@@ -651,7 +660,7 @@ function MediaGrid({
       {items.map((item) => (
         <div
           key={item._id}
-          className="break-inside-avoid relative group cursor-pointer rounded-xl overflow-hidden border border-[var(--border)] bg-[var(--surface)]"
+          className="break-inside-avoid relative group cursor-pointer rounded-xl overflow-hidden border border-[var(--border)] bg-[var(--surface)] transition-all duration-300 hover:border-[var(--primary-dim)] hover:shadow-[0_8px_24px_-8px_rgba(0,0,0,0.5),0_0_20px_rgba(242,163,22,0.12)]"
           onClick={() => onPreview(item)}
         >
           {item.type === "image" ? (
@@ -660,19 +669,24 @@ function MediaGrid({
               alt={item.caption ?? "Gallery image"}
               width={600}
               height={450}
-              className="w-full h-auto object-cover"
+              className="w-full h-auto object-cover transition-transform duration-500 ease-out group-hover:scale-110"
             />
           ) : (
-            <div className="relative aspect-video bg-black">
+            <div className="relative aspect-video bg-black overflow-hidden">
               {item.thumbnail ? (
-                <Image src={item.thumbnail} alt={item.caption ?? ""} fill className="object-cover" />
+                <Image
+                  src={item.thumbnail}
+                  alt={item.caption ?? ""}
+                  fill
+                  className="object-cover transition-transform duration-500 ease-out group-hover:scale-110"
+                />
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-[var(--card)]">
                   <Video size={32} className="text-[var(--text-2)]" />
                 </div>
               )}
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-10 h-10 rounded-full bg-black/60 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-full bg-black/60 flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
                   <Play size={16} className="text-white" fill="white" />
                 </div>
               </div>

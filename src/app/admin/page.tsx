@@ -81,18 +81,6 @@ export default async function AdminDashboard() {
             show: isSuperAdmin(user) || hasPermission(user, PERMISSIONS.POST_ANNOUNCEMENTS),
           },
           {
-            href: "/admin/schedule",
-            label: "Manage Schedule",
-            desc: "Add or update match times",
-            show: isSuperAdmin(user) || hasPermission(user, PERMISSIONS.MANAGE_SCHEDULE),
-          },
-          {
-            href: "/admin/results",
-            label: "Post Results",
-            desc: "Update match results & stats",
-            show: isSuperAdmin(user) || hasPermission(user, PERMISSIONS.MANAGE_RESULTS),
-          },
-          {
             href: "/admin/gallery",
             label: "Upload Media",
             desc: "Add photos or videos",

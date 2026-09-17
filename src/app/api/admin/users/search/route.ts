@@ -2,13 +2,13 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth/auth";
 import { connectDB } from "@/lib/db/mongoose";
 import User from "@/lib/db/models/User";
-import { isSuperAdmin } from "@/lib/auth/permissions";
+import { isAdmin } from "@/lib/auth/permissions";
 
 // GET /api/admin/users/search?q=<query>
 // Returns users whose name or email match the query (case-insensitive, limit 10)
 export async function GET(request: Request) {
   const session = await auth();
-  if (!session?.user?.id || !isSuperAdmin(session.user))
+  if (!session?.user?.id || !isAdmin(session.user))
     return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
 
   const { searchParams } = new URL(request.url);

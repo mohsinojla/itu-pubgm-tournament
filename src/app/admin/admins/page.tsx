@@ -27,7 +27,9 @@ export default async function AdminAdminsPage() {
     <div>
       <h1 className="font-heading text-2xl font-bold mb-2">Admin Management</h1>
       <p className="text-[var(--text-2)] text-sm mb-6">
-        Only super admin can add or remove admins and configure their permissions.
+        Only the super admin can add or remove admins. Every admin has full access to the panel —
+        the same as the super admin — except they cannot delete community members or media (photos/videos).
+        The permission toggles below no longer restrict access; they&apos;re kept for future fine-grained control.
       </p>
       <AdminsManager
         admins={JSON.parse(JSON.stringify(admins))}

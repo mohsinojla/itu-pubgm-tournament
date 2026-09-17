@@ -23,16 +23,19 @@ export default function PageHero({
       {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-b from-[var(--primary)]/5 via-transparent to-transparent pointer-events-none" />
 
+      {/* Ambient glow orb */}
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[420px] h-[420px] rounded-full bg-[var(--primary)]/10 blur-3xl glow-pulse pointer-events-none" />
+
       <div className="relative z-10 text-center max-w-4xl mx-auto">
-        <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-glow">
+        <h1 className="fade-in-up font-heading text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-glow">
           <span className="gold-text">{title}</span>
         </h1>
         {subtitle && (
-          <p className="mt-3 text-[var(--text-2)] text-base sm:text-lg max-w-2xl mx-auto">
+          <p className="fade-in-up fade-in-up-delay-1 mt-3 text-[var(--text-2)] text-base sm:text-lg max-w-2xl mx-auto">
             {subtitle}
           </p>
         )}
-        {children && <div className="mt-6">{children}</div>}
+        {children && <div className="fade-in-up fade-in-up-delay-2 mt-6">{children}</div>}
       </div>
 
       {/* Bottom fade */}

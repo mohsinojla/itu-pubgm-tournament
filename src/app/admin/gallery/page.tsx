@@ -30,6 +30,7 @@ export default async function AdminGalleryPage() {
         items={JSON.parse(JSON.stringify(items))}
         sections={JSON.parse(JSON.stringify(sections))}
         isAdmin
+        canDelete={isSuperAdmin(session.user)}
       />
     </div>
   );

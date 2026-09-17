@@ -4,14 +4,22 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
-const CYCLE_MS = 30000;
+const CYCLE_MS = 15000;
 
 function WallpaperLayer({ images, className }: { images: string[]; className: string }) {
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
     if (images.length < 2) return;
-    const id = setInterval(() => setIndex((i) => (i + 1) % images.length), CYCLE_MS);
+    const id = setInterval(
+      () =>
+        setIndex((i) => {
+          // Jump to a random image, never repeating the current one
+          const offset = 1 + Math.floor(Math.random() * (images.length - 1));
+          return (i + offset) % images.length;
+        }),
+      CYCLE_MS
+    );
     return () => clearInterval(id);
   }, [images.length]);
 

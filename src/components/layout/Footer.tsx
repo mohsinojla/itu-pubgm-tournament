@@ -42,13 +42,11 @@ export default function Footer() {
             </h4>
             <ul className="space-y-2 text-sm text-[var(--text-2)]">
               {[
-                ["/schedule", "Schedule"],
-                ["/results", "Results"],
                 ["/statistics", "Statistics"],
-                ["/honour-board", "Honour Board"],
                 ["/gallery", "Gallery"],
                 ["/rules", "Rules"],
-                ["/community", "Community"],
+                ["/prizes", "Prizes"],
+                ["/queries", "Queries"],
               ].map(([href, label]) => (
                 <li key={href}>
                   <Link

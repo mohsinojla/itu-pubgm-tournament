@@ -173,7 +173,7 @@ export default function CompleteProfileForm() {
       {/* PUBG ID */}
       <Input
         label="PUBG Mobile ID"
-        placeholder="Your numeric PUBG ID"
+        placeholder="Your numeric PUBG ID (7-12 digits)"
         error={errors.pubgId?.message}
         hint="Optional now — but required before creating or joining a team"
         {...register("pubgId")}

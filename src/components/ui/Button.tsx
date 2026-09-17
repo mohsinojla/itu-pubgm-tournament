@@ -10,15 +10,15 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variants = {
   primary:
-    "bg-[var(--primary)] text-black font-semibold hover:bg-[var(--primary-dim)] glow-primary-sm",
+    "bg-[var(--primary)] text-black font-semibold hover:bg-[var(--primary-dim)] glow-primary-sm hover:shadow-[0_0_24px_rgba(242,163,22,0.4)] hover:-translate-y-0.5 active:translate-y-0",
   secondary:
-    "bg-[var(--surface)] text-[var(--text-1)] border border-[var(--border)] hover:border-[var(--primary-dim)]",
+    "bg-[var(--surface)] text-[var(--text-1)] border border-[var(--border)] hover:border-[var(--primary-dim)] hover:-translate-y-0.5 active:translate-y-0",
   outline:
-    "border border-[var(--primary)] text-[var(--primary)] hover:bg-[var(--primary)]/10",
+    "border border-[var(--primary)] text-[var(--primary)] hover:bg-[var(--primary)]/10 hover:-translate-y-0.5 active:translate-y-0",
   ghost:
     "text-[var(--text-2)] hover:text-[var(--text-1)] hover:bg-[var(--surface)]",
   danger:
-    "bg-[var(--danger)] text-white hover:bg-red-600",
+    "bg-[var(--danger)] text-white hover:bg-red-600 hover:-translate-y-0.5 active:translate-y-0",
 };
 
 const sizes = {

@@ -12,32 +12,26 @@ import {
   Shield,
   LogOut,
   User,
-  Users,
-  Trophy,
-  Calendar,
   BarChart3,
   ImageIcon,
   Megaphone,
   BookOpen,
   Gift,
   Home,
-  Swords,
+  MessageCircleQuestion,
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import NotificationBell from "./NotificationBell";
 
-// Community replaces Teams in the navbar. Teams is still accessible via the home page CTA.
+// Teams is still accessible via the home page CTA.
 const navLinks = [
   { href: "/", label: "Home", icon: Home },
-  { href: "/schedule", label: "Schedule", icon: Calendar },
-  { href: "/results", label: "Results", icon: Swords },
   { href: "/statistics", label: "Stats", icon: BarChart3 },
-  { href: "/honour-board", label: "Honours", icon: Trophy },
   { href: "/gallery", label: "Gallery", icon: ImageIcon },
-  { href: "/community", label: "Community", icon: Users },
   { href: "/announcements", label: "News", icon: Megaphone },
   { href: "/rules", label: "Rules", icon: BookOpen },
   { href: "/prizes", label: "Prizes", icon: Gift },
+  { href: "/queries", label: "Queries", icon: MessageCircleQuestion },
 ];
 
 export default function Navbar() {
@@ -52,6 +46,8 @@ export default function Navbar() {
   const isAdminOrSuperAdmin =
     session?.user?.role === "admin" ||
     session?.user?.role === "super_admin";
+
+  const visibleLinks = navLinks;
 
   return (
     <nav className="sticky top-0 z-50 border-b border-[var(--border)] bg-[var(--bg)]/95 backdrop-blur-md">
@@ -78,7 +74,7 @@ export default function Navbar() {
 
           {/* Desktop Nav Links — first 7 visible, rest in More */}
           <div className="hidden lg:flex items-center gap-1">
-            {navLinks.slice(0, 7).map(({ href, label }) => (
+            {visibleLinks.slice(0, 7).map(({ href, label }) => (
               <Link
                 key={href}
                 href={href}
@@ -98,7 +94,7 @@ export default function Navbar() {
                 More <ChevronDown size={14} />
               </button>
               <div className="absolute top-full right-0 mt-1 w-44 bg-[var(--card)] border border-[var(--border)] rounded-xl overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all shadow-xl">
-                {navLinks.slice(7).map(({ href, label, icon: Icon }) => (
+                {visibleLinks.slice(7).map(({ href, label, icon: Icon }) => (
                   <Link
                     key={href}
                     href={href}
@@ -224,7 +220,7 @@ export default function Navbar() {
       {isOpen && (
         <div className="lg:hidden border-t border-[var(--border)] bg-[var(--surface)]">
           <div className="px-4 py-3 space-y-1">
-            {navLinks.map(({ href, label, icon: Icon }) => (
+            {visibleLinks.map(({ href, label, icon: Icon }) => (
               <Link
                 key={href}
                 href={href}

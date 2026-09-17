@@ -1,37 +1,36 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth/auth";
 import { connectDB } from "@/lib/db/mongoose";
-import Gallery from "@/lib/db/models/Gallery";
+import PrizeImage from "@/lib/db/models/PrizeImage";
 import { cloudinary } from "@/lib/cloudinary/config";
 import { isSuperAdmin } from "@/lib/auth/permissions";
 
 export async function DELETE(
   _request: Request,
-  { params }: { params: Promise<{ itemId: string }> }
+  { params }: { params: Promise<{ imageId: string }> }
 ) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
   }
 
-  // Only the super admin can delete media — regular admins can upload/edit but not remove it.
+  // Only the super admin can delete media — regular admins can upload but not remove it.
   if (!isSuperAdmin(session.user)) {
     return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
   }
 
-  const { itemId } = await params;
+  const { imageId } = await params;
   await connectDB();
 
-  const item = await Gallery.findById(itemId);
-  if (!item) return NextResponse.json({ success: false, error: "Not found" }, { status: 404 });
+  const image = await PrizeImage.findById(imageId);
+  if (!image) return NextResponse.json({ success: false, error: "Not found" }, { status: 404 });
 
-  // Delete from Cloudinary
   try {
-    await cloudinary.uploader.destroy(item.publicId, { resource_type: item.type });
+    await cloudinary.uploader.destroy(image.publicId, { resource_type: "image" });
   } catch {
     // Continue even if Cloudinary delete fails
   }
 
-  await item.deleteOne();
+  await image.deleteOne();
   return NextResponse.json({ success: true });
 }

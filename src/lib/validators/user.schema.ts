@@ -24,7 +24,11 @@ export const completeProfileSchema = z.object({
     .string()
     .min(2, "Roll number is required")
     .max(30, "Roll number too long"),
-  pubgId: z.string().max(50).optional().or(z.literal("")),
+  pubgId: z
+    .string()
+    .regex(/^\d{7,12}$/, "PUBG ID must be 7-12 digits")
+    .optional()
+    .or(z.literal("")),
   pubgName: z.string().max(50).optional().or(z.literal("")),
   gender: z.enum(["male", "female", "other"]),
   semester: z.number().int().min(1).max(8),

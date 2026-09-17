@@ -20,6 +20,7 @@ export default async function GalleryPage() {
   const isAdmin =
     session?.user &&
     (isSuperAdmin(session.user) || hasPermission(session.user, PERMISSIONS.MANAGE_GALLERY));
+  const canDelete = !!session?.user && isSuperAdmin(session.user);
 
   return (
     <>
@@ -32,6 +33,7 @@ export default async function GalleryPage() {
           items={JSON.parse(JSON.stringify(items))}
           sections={JSON.parse(JSON.stringify(sections))}
           isAdmin={!!isAdmin}
+          canDelete={canDelete}
         />
       </div>
     </>

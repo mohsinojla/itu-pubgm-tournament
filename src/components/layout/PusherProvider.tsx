@@ -29,18 +29,6 @@ export default function PusherProvider({ children }: { children: React.ReactNode
       });
     });
 
-    tournamentChannel.bind(PUSHER_EVENTS.MATCH_LIVE, (data: { matchNumber?: number }) => {
-      toast(`Match #${data.matchNumber ?? "?"} is now LIVE! 🔥`, {
-        duration: 8000,
-        style: {
-          background: "var(--card)",
-          color: "var(--primary)",
-          border: "1px solid var(--primary)",
-          fontWeight: "bold",
-        },
-      });
-    });
-
     return () => {
       pusher.unsubscribe(PUSHER_CHANNELS.tournament(TOURNAMENT_ID));
     };

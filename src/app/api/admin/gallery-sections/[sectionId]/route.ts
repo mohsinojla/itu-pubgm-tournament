@@ -3,7 +3,6 @@ import { auth } from "@/lib/auth/auth";
 import { connectDB } from "@/lib/db/mongoose";
 import GallerySection from "@/lib/db/models/GallerySection";
 import Gallery from "@/lib/db/models/Gallery";
-import CommunityMember from "@/lib/db/models/CommunityMember";
 import { isSuperAdmin, hasPermission } from "@/lib/auth/permissions";
 import { PERMISSIONS } from "@/lib/constants/permissions";
 
@@ -70,10 +69,8 @@ export async function DELETE(_request: Request, { params }: Params) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
   }
 
-  const canManage =
-    isSuperAdmin(session.user) ||
-    hasPermission(session.user, PERMISSIONS.MANAGE_GALLERY);
-  if (!canManage) {
+  // Deletion stays super-admin-only even though other section edits are open to admins.
+  if (!isSuperAdmin(session.user)) {
     return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
   }
 
@@ -87,11 +84,8 @@ export async function DELETE(_request: Request, { params }: Params) {
       return NextResponse.json({ success: false, error: "Section not found" }, { status: 404 });
     }
 
-    // Remove gallery media association + community members for this event
-    await Promise.all([
-      Gallery.updateMany({ sectionId: section._id }, { $unset: { sectionId: "" } }),
-      CommunityMember.deleteMany({ eventId: section._id }),
-    ]);
+    // Remove gallery media association for this event
+    await Gallery.updateMany({ sectionId: section._id }, { $unset: { sectionId: "" } });
 
     await GallerySection.findByIdAndDelete(sectionId);
 

@@ -89,10 +89,17 @@ h1, h2, h3, h4, h5, h6 {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 12px;
+  transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
 }
 .game-card:hover {
   border-color: var(--primary-dim);
-  transition: border-color 0.2s ease;
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px -12px rgba(0, 0, 0, 0.5), 0 0 24px rgba(242, 163, 22, 0.1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .game-card:hover {
+    transform: none;
+  }
 }
 
 /* Grid pattern background */
@@ -155,12 +162,38 @@ h1, h2, h3, h4, h5, h6 {
   animation: float-particle 7s ease-in-out infinite;
 }
 
+/* Generic entrance animation for server-rendered content */
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-in-up {
+  animation: fade-in-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.fade-in-up-delay-1 { animation-delay: 0.08s; }
+.fade-in-up-delay-2 { animation-delay: 0.16s; }
+.fade-in-up-delay-3 { animation-delay: 0.24s; }
+
+/* Staggered reveal for card grids */
+.stagger-fade > * {
+  animation: fade-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.stagger-fade > *:nth-child(1) { animation-delay: 0.02s; }
+.stagger-fade > *:nth-child(2) { animation-delay: 0.08s; }
+.stagger-fade > *:nth-child(3) { animation-delay: 0.14s; }
+.stagger-fade > *:nth-child(4) { animation-delay: 0.2s; }
+.stagger-fade > *:nth-child(5) { animation-delay: 0.26s; }
+.stagger-fade > *:nth-child(6) { animation-delay: 0.32s; }
+.stagger-fade > *:nth-child(n+7) { animation-delay: 0.36s; }
+
 @media (prefers-reduced-motion: reduce) {
   .animate-spin-slow,
   .zone-ring,
   .glow-pulse,
   .particle,
-  .gold-text-animated {
+  .gold-text-animated,
+  .fade-in-up,
+  .stagger-fade > * {
     animation: none;
   }
 }

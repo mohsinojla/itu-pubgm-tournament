@@ -13,9 +13,13 @@ export interface SessionUser {
 // Minimal type for permission checks — only role and permissions are needed
 type RoleUser = { role: string; permissions: string[] };
 
-export function hasPermission(user: RoleUser, perm: Permission): boolean {
+// Admins have the same full access as the super admin everywhere except the
+// specific delete actions carved out in isSuperAdmin-gated routes (deleting
+// community members or media). Per-permission assignment is no longer required.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- kept for call-site compatibility
+export function hasPermission(user: RoleUser, _perm: Permission): boolean {
   if (user.role === "super_admin") return true;
-  if (user.role === "admin") return user.permissions.includes(perm);
+  if (user.role === "admin") return true;
   return false;
 }
 

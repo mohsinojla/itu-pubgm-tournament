@@ -61,7 +61,7 @@ export default async function HomePage() {
         <ScrollReveal className="relative max-w-4xl mx-auto px-4 py-10 grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
           <StatItem icon={<Users size={22} className="text-[var(--primary)]" />} value={playerCount} label="Registered Players" />
           <StatItem icon={<Swords size={22} className="text-[var(--primary)]" />} value={teamCount} label="Competing Teams" />
-          <StatItem icon={<Trophy size={22} className="text-[var(--primary)]" />} value="TBD" label="Prize Pool" />
+          <StatItem icon={<Trophy size={22} className="text-[var(--primary)]" />} value="Up to 43K" label="Prize Pool" />
         </ScrollReveal>
       </section>
 

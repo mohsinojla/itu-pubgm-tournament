@@ -1,9 +1,5 @@
 export const PUSHER_EVENTS = {
-  MATCH_SCHEDULED: "match:scheduled",
-  MATCH_LIVE: "match:live",
-  MATCH_RESULT: "match:result",
   ANNOUNCEMENT_NEW: "announcement:new",
-  HONOUR_UPDATED: "honour:updated",
   NOTIFICATION_NEW: "notification:new",
   JOIN_REQUEST_NEW: "join_request:new",
   JOIN_REQUEST_DECIDED: "join_request:decided",
