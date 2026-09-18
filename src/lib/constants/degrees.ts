@@ -13,9 +13,11 @@ export const PROGRAMMES_BY_LEVEL: Record<DegreeLevel, readonly string[]> = {
     "BS Mechanical Engineering",
     "BS Civil Engineering",
     "BS Business Administration",
+    "BS Financial Technology",
     "BS Economics",
     "BS Mathematics",
     "BS Physics",
+    "BS Others",
   ],
   MS: [
     "MS Computer Science",
@@ -24,11 +26,13 @@ export const PROGRAMMES_BY_LEVEL: Record<DegreeLevel, readonly string[]> = {
     "MS Computer Engineering",
     "MS Electrical Engineering",
     "MS Business Administration",
+    "MS Others",
   ],
   PhD: [
     "PhD Computer Science",
     "PhD Computer Engineering",
     "PhD Electrical Engineering",
+    "PhD Others",
   ],
 };
 
