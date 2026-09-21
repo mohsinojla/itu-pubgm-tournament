@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Users, Trash2, Search, Shield, Pencil, Check, X } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Users, Trash2, Search, Shield, Pencil, Check, X, Plus } from "lucide-react";
 import toast from "react-hot-toast";
 import Avatar from "@/components/ui/Avatar";
 import Badge from "@/components/ui/Badge";
@@ -27,9 +28,61 @@ interface Team {
   createdAt: string;
 }
 
-export default function AdminTeamsPanel({ initialTeams, isSuperAdmin }: { initialTeams: Team[]; isSuperAdmin?: boolean }) {
+export interface AvailablePlayer {
+  _id: string;
+  name?: string;
+  email: string;
+  rollNumber?: string;
+}
+
+export default function AdminTeamsPanel({
+  initialTeams,
+  isSuperAdmin,
+  availablePlayers = [],
+}: {
+  initialTeams: Team[];
+  isSuperAdmin?: boolean;
+  availablePlayers?: AvailablePlayer[];
+}) {
+  const router = useRouter();
   const [teams, setTeams] = useState(initialTeams);
   const [search, setSearch] = useState("");
+  const [showCreate, setShowCreate] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newLeaderId, setNewLeaderId] = useState("");
+  const [creating, setCreating] = useState(false);
+
+  async function createTeam() {
+    const name = newName.trim();
+    if (name.length < 2 || name.length > 24) {
+      toast.error("Team name must be 2-24 characters");
+      return;
+    }
+    if (!newLeaderId) {
+      toast.error("Pick a team leader");
+      return;
+    }
+    setCreating(true);
+    try {
+      const res = await fetch("/api/admin/teams", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, leaderId: newLeaderId }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success(`Team "${name}" created`);
+        setNewName("");
+        setNewLeaderId("");
+        setShowCreate(false);
+        router.refresh();
+      } else {
+        toast.error(data.error ?? "Failed to create team");
+      }
+    } finally {
+      setCreating(false);
+    }
+  }
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
@@ -116,7 +169,59 @@ export default function AdminTeamsPanel({ initialTeams, isSuperAdmin }: { initia
           />
         </div>
         <span className="text-sm text-[var(--text-2)]">{teams.length} teams</span>
+        <button
+          onClick={() => setShowCreate((v) => !v)}
+          className="ml-auto flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[var(--primary)] text-black text-sm font-semibold hover:bg-[var(--primary-dim)] transition-colors"
+        >
+          <Plus size={14} /> Create team
+        </button>
       </div>
+
+      {showCreate && (
+        <div className="game-card p-5 space-y-3 max-w-xl border border-[var(--primary)]/20">
+          <h3 className="font-heading font-bold">Create a team</h3>
+          <p className="text-xs text-[var(--text-2)]">
+            Choose a name and a leader (a player who isn&apos;t on a team yet). Add more players from the Players page.
+          </p>
+          <input
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+            placeholder="Team name (2-24 characters)"
+            className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-sm focus:outline-none focus:border-[var(--primary)] transition-colors"
+          />
+          <select
+            value={newLeaderId}
+            onChange={(e) => setNewLeaderId(e.target.value)}
+            className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-sm focus:outline-none focus:border-[var(--primary)] transition-colors"
+          >
+            <option value="">Select team leader…</option>
+            {availablePlayers.map((p) => (
+              <option key={p._id} value={p._id}>
+                {p.name ?? p.email}
+                {p.rollNumber ? ` — ${p.rollNumber}` : ""}
+              </option>
+            ))}
+          </select>
+          {availablePlayers.length === 0 && (
+            <p className="text-xs text-[var(--warning)]">Every registered player is already on a team.</p>
+          )}
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowCreate(false)}
+              className="px-4 py-2 rounded-xl border border-[var(--border)] text-sm text-[var(--text-2)] hover:text-[var(--text-1)] transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={createTeam}
+              disabled={creating}
+              className="px-4 py-2 rounded-xl bg-[var(--primary)] text-black text-sm font-semibold hover:bg-[var(--primary-dim)] disabled:opacity-60 transition-colors"
+            >
+              {creating ? "Creating…" : "Create team"}
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="overflow-x-auto rounded-2xl border border-[var(--border)]">
         <table className="w-full text-sm">

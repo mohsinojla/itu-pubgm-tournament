@@ -5,9 +5,10 @@ import Link from "next/link";
 import Image from "next/image";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import { EyeOff, Eye, Trash2, ExternalLink, Search, Download } from "lucide-react";
+import { EyeOff, Eye, Trash2, ExternalLink, Search, Download, Pencil } from "lucide-react";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
+import AdminPlayerEditModal, { type TeamOption } from "@/components/admin/AdminPlayerEditModal";
 
 interface Player {
   _id: string;
@@ -20,15 +21,19 @@ interface Player {
   whatsapp?: string;
   role: string;
   statsHidden?: boolean;
+  gender?: string;
   degreeProgramme?: string;
   semester?: number;
   teamId?: string;
   createdAt: string;
 }
 
-export default function PlayersTable({ players }: { players: Player[] }) {
+export default function PlayersTable({ players, teams = [] }: { players: Player[]; teams?: TeamOption[] }) {
   const router = useRouter();
   const [search, setSearch] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const editingPlayer = players.find((p) => p._id === editingId) ?? null;
+  const teamName = (id?: string) => teams.find((t) => t._id === id)?.name;
   const [loading, setLoading] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
 
@@ -179,11 +184,22 @@ export default function PlayersTable({ players }: { players: Player[] }) {
                   <td className="px-4 py-3">
                     <div className="flex flex-col gap-1">
                       {player.statsHidden && <Badge variant="warning" className="text-[10px] w-fit">Stats Hidden</Badge>}
-                      {player.teamId && <Badge variant="blue" className="text-[10px] w-fit">In Team</Badge>}
+                      {player.teamId && (
+                        <Badge variant="blue" className="text-[10px] w-fit">
+                          {teamName(player.teamId) ?? "In Team"}
+                        </Badge>
+                      )}
                     </div>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-1">
+                      <button
+                        onClick={() => setEditingId(player._id)}
+                        title="Edit player / assign team"
+                        className="p-1.5 text-[var(--text-2)] hover:text-[var(--primary)] rounded-lg hover:bg-[var(--primary)]/10 transition-colors"
+                      >
+                        <Pencil size={14} />
+                      </button>
                       <Link
                         href={`/profile/${player._id}`}
                         target="_blank"
@@ -230,6 +246,15 @@ export default function PlayersTable({ players }: { players: Player[] }) {
           )}
         </div>
       </div>
+
+      {editingPlayer && (
+        <AdminPlayerEditModal
+          key={editingPlayer._id}
+          player={editingPlayer}
+          teams={teams}
+          onClose={() => setEditingId(null)}
+        />
+      )}
     </div>
   );
 }

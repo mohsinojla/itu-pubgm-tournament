@@ -4,6 +4,7 @@ import { connectDB } from "@/lib/db/mongoose";
 import Team from "@/lib/db/models/Team";
 import User from "@/lib/db/models/User";
 import Notification from "@/lib/db/models/Notification";
+import { playerEditLockResponse } from "@/lib/auth/editLock";
 
 export async function POST(
   request: Request,
@@ -13,6 +14,9 @@ export async function POST(
   if (!session?.user?.id) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
   }
+
+  const locked = await playerEditLockResponse(session.user);
+  if (locked) return locked;
 
   const { teamId } = await params;
   const { newLeaderId } = await request.json();

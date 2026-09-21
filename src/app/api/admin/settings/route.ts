@@ -17,15 +17,25 @@ export async function PATCH(request: Request) {
   }
 
   try {
-    const { statsPageVisible } = await request.json();
-    if (typeof statsPageVisible !== "boolean") {
-      return NextResponse.json({ success: false, error: "statsPageVisible must be a boolean" }, { status: 400 });
+    const body = await request.json();
+    const updates: Record<string, boolean> = {};
+
+    for (const key of ["statsPageVisible", "playerEditsLocked"] as const) {
+      if (body[key] === undefined) continue;
+      if (typeof body[key] !== "boolean") {
+        return NextResponse.json({ success: false, error: `${key} must be a boolean` }, { status: 400 });
+      }
+      updates[key] = body[key];
+    }
+
+    if (Object.keys(updates).length === 0) {
+      return NextResponse.json({ success: false, error: "No valid settings provided" }, { status: 400 });
     }
 
     await connectDB();
     const settings = await SiteSettings.findByIdAndUpdate(
       "global",
-      { statsPageVisible },
+      { $set: updates },
       { upsert: true, new: true }
     );
 

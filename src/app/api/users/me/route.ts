@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth/auth";
 import { connectDB } from "@/lib/db/mongoose";
 import User from "@/lib/db/models/User";
+import { playerEditLockResponse } from "@/lib/auth/editLock";
 
 export async function GET() {
   const session = await auth();
@@ -26,6 +27,9 @@ export async function PATCH(request: Request) {
   if (!session?.user?.id) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
   }
+
+  const locked = await playerEditLockResponse(session.user);
+  if (locked) return locked;
 
   try {
     const body = await request.json();

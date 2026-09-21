@@ -6,6 +6,7 @@ import Team from "@/lib/db/models/Team";
 import JoinRequest from "@/lib/db/models/JoinRequest";
 import User from "@/lib/db/models/User";
 import Notification from "@/lib/db/models/Notification";
+import { playerEditLockResponse } from "@/lib/auth/editLock";
 
 export async function PATCH(
   request: Request,
@@ -15,6 +16,9 @@ export async function PATCH(
   if (!session?.user?.id) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
   }
+
+  const locked = await playerEditLockResponse(session.user);
+  if (locked) return locked;
 
   const { teamId, reqId } = await params;
   const { action } = await request.json(); // "approve" | "reject"

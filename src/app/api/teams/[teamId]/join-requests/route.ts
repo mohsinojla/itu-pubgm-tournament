@@ -7,6 +7,7 @@ import User from "@/lib/db/models/User";
 import Notification from "@/lib/db/models/Notification";
 import { pusherServer } from "@/lib/pusher/server";
 import { PUSHER_CHANNELS, PUSHER_EVENTS } from "@/lib/constants/pusher-events";
+import { playerEditLockResponse } from "@/lib/auth/editLock";
 
 export async function GET(_req: Request, { params }: { params: Promise<{ teamId: string }> }) {
   const session = await auth();
@@ -37,6 +38,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ tea
   if (!session?.user?.id) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
   }
+  const locked = await playerEditLockResponse(session.user);
+  if (locked) return locked;
+
   const isPrivileged = session.user.role === "admin" || session.user.role === "super_admin";
   if (!isPrivileged && !session.user.profileCompleted) {
     return NextResponse.json({ success: false, error: "Complete your profile first" }, { status: 403 });

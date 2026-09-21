@@ -6,6 +6,7 @@ import User from "@/lib/db/models/User";
 import Notification from "@/lib/db/models/Notification";
 import { isSuperAdmin, hasPermission } from "@/lib/auth/permissions";
 import { PERMISSIONS } from "@/lib/constants/permissions";
+import { playerEditLockResponse } from "@/lib/auth/editLock";
 
 export async function POST(
   request: Request,
@@ -15,6 +16,9 @@ export async function POST(
   if (!session?.user?.id) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
   }
+
+  const locked = await playerEditLockResponse(session.user);
+  if (locked) return locked;
 
   const { teamId } = await params;
   const { memberId } = await request.json();

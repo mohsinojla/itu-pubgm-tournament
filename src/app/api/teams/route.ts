@@ -5,15 +5,8 @@ import Team from "@/lib/db/models/Team";
 import User from "@/lib/db/models/User";
 import { createTeamSchema } from "@/lib/validators/team.schema";
 import { nanoid } from "nanoid";
-
-async function generateUniqueTeamId(): Promise<string> {
-  for (let i = 0; i < 20; i++) {
-    const id = String(Math.floor(10000 + Math.random() * 90000));
-    const exists = await Team.findOne({ teamId: id }).lean();
-    if (!exists) return id;
-  }
-  throw new Error("Could not generate a unique team ID");
-}
+import { playerEditLockResponse } from "@/lib/auth/editLock";
+import { generateUniqueTeamId } from "@/lib/teams/helpers";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -42,6 +35,9 @@ export async function POST(request: Request) {
   if (!session?.user?.id) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
   }
+  const locked = await playerEditLockResponse(session.user);
+  if (locked) return locked;
+
   const isPrivileged = session.user.role === "admin" || session.user.role === "super_admin";
   if (!isPrivileged && !session.user.profileCompleted) {
     return NextResponse.json({ success: false, error: "Complete your profile first" }, { status: 403 });

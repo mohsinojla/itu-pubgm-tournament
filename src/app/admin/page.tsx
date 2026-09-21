@@ -7,6 +7,8 @@ import { isSuperAdmin, hasPermission } from "@/lib/auth/permissions";
 import { PERMISSIONS } from "@/lib/constants/permissions";
 import Link from "next/link";
 import { Users, UsersRound, Megaphone, Shield } from "lucide-react";
+import { isPlayerEditingLocked } from "@/lib/db/models/SiteSettings";
+import PlayerEditLockToggle from "@/components/admin/PlayerEditLockToggle";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +26,7 @@ async function getStats() {
 export default async function AdminDashboard() {
   const [session, stats] = await Promise.all([auth(), getStats()]);
   const user = session!.user;
+  const playerEditsLocked = await isPlayerEditingLocked();
 
   return (
     <div>
@@ -31,6 +34,8 @@ export default async function AdminDashboard() {
         Welcome back, {session?.user?.name?.split(" ")[0] ?? "Admin"}
       </h1>
       <p className="text-[var(--text-2)] mb-8">ITU × PUBGM Supremacy Cup — Admin Panel</p>
+
+      <PlayerEditLockToggle locked={playerEditsLocked} />
 
       {/* Stats cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

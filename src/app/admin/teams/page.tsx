@@ -4,6 +4,7 @@ import { hasPermission, isSuperAdmin } from "@/lib/auth/permissions";
 import { PERMISSIONS } from "@/lib/constants/permissions";
 import { connectDB } from "@/lib/db/mongoose";
 import Team from "@/lib/db/models/Team";
+import User from "@/lib/db/models/User";
 import AdminTeamsPanel from "@/components/admin/AdminTeamsPanel";
 
 export const dynamic = "force-dynamic";
@@ -15,15 +16,28 @@ export default async function AdminTeamsPage() {
   if (!canManage) redirect("/admin");
 
   await connectDB();
-  const teams = await Team.find()
-    .populate("leaderId", "name photo")
-    .sort({ createdAt: -1 })
-    .lean();
+  const [teams, availablePlayers] = await Promise.all([
+    Team.find()
+      .populate("leaderId", "name photo")
+      .sort({ createdAt: -1 })
+      .lean(),
+    // Players with no team yet — candidates to lead a newly created team.
+    User.find({ role: "player", profileCompleted: true, teamId: null })
+      .select("name email rollNumber")
+      .sort({ name: 1 })
+      .lean(),
+  ]);
 
   return (
     <div>
       <h1 className="font-heading text-2xl font-bold mb-6">Team Management</h1>
-      <AdminTeamsPanel initialTeams={JSON.parse(JSON.stringify(teams))} isSuperAdmin={isSuperAdmin(session.user)} />
+      <AdminTeamsPanel
+        // Remount when the set of teams/members changes so refreshed server data replaces local state.
+        key={teams.map((t) => `${t._id}:${(t.members ?? []).length}`).join(",")}
+        initialTeams={JSON.parse(JSON.stringify(teams))}
+        isSuperAdmin={isSuperAdmin(session.user)}
+        availablePlayers={JSON.parse(JSON.stringify(availablePlayers))}
+      />
     </div>
   );
 }

@@ -5,6 +5,7 @@ import Team from "@/lib/db/models/Team";
 import User from "@/lib/db/models/User";
 import { isSuperAdmin, hasPermission } from "@/lib/auth/permissions";
 import { PERMISSIONS } from "@/lib/constants/permissions";
+import { playerEditLockResponse } from "@/lib/auth/editLock";
 
 export async function GET(_req: Request, { params }: { params: Promise<{ teamId: string }> }) {
   const { teamId } = await params;
@@ -27,6 +28,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ te
   if (!session?.user?.id) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
   }
+
+  const locked = await playerEditLockResponse(session.user);
+  if (locked) return locked;
 
   const { teamId } = await params;
   await connectDB();
@@ -96,6 +100,9 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ team
   if (!session?.user?.id) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
   }
+
+  const locked = await playerEditLockResponse(session.user);
+  if (locked) return locked;
 
   const { teamId } = await params;
   await connectDB();
