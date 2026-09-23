@@ -36,7 +36,7 @@ export default async function StatisticsPage() {
       .select("gender degreeProgramme semester")
       .lean(),
     PlayerStats.find(admin ? {} : { isHidden: { $ne: true } })
-      .populate("userId", "name pubgName photo isVerifiedPlayer")
+      .populate("userId", "name pubgName photo")
       .populate("teamId", "name")
       .sort({ totalKills: -1 })
       .lean(),

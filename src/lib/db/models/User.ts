@@ -17,7 +17,6 @@ export interface IUser extends Document {
   degreeProgramme?: string;
   photo?: string;
   whatsapp?: string;
-  isVerifiedPlayer: boolean;
   role: "player" | "admin" | "super_admin";
   permissions: string[];
   teamId?: mongoose.Types.ObjectId;
@@ -55,7 +54,6 @@ const UserSchema = new Schema<IUser>(
     degreeProgramme: { type: String },
     photo: { type: String },
     whatsapp: { type: String, trim: true },
-    isVerifiedPlayer: { type: Boolean, default: false },
     role: {
       type: String,
       enum: ["player", "admin", "super_admin"],

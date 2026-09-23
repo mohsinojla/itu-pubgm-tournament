@@ -26,7 +26,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ teamId:
   }
 
   const requests = await JoinRequest.find({ teamId, status: "pending" })
-    .populate("userId", "name photo pubgName rollNumber semester degreeProgramme isVerifiedPlayer")
+    .populate("userId", "name photo pubgName rollNumber semester degreeProgramme")
     .sort({ createdAt: -1 })
     .lean();
 

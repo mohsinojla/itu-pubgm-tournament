@@ -14,13 +14,13 @@ export const dynamic = "force-dynamic";
 
 async function getStats() {
   await connectDB();
-  const [players, teams, announcements, unverified] = await Promise.all([
+  const [players, teams, announcements, completedProfiles] = await Promise.all([
     User.countDocuments({ role: "player" }),
     Team.countDocuments(),
     Announcement.countDocuments(),
-    User.countDocuments({ role: "player", isVerifiedPlayer: false, profileCompleted: true }),
+    User.countDocuments({ role: "player", profileCompleted: true }),
   ]);
-  return { players, teams, announcements, unverified };
+  return { players, teams, announcements, completedProfiles };
 }
 
 export default async function AdminDashboard() {
@@ -45,7 +45,7 @@ export default async function AdminDashboard() {
             icon={<Users size={22} className="text-[var(--primary)]" />}
             label="Registered Players"
             value={stats.players}
-            sub={stats.unverified > 0 ? `${stats.unverified} unverified` : "All verified"}
+            sub={`${stats.completedProfiles} completed profile${stats.completedProfiles === 1 ? "" : "s"}`}
           />
         )}
         {(isSuperAdmin(user) || hasPermission(user, PERMISSIONS.MANAGE_TEAMS)) && (
@@ -94,7 +94,7 @@ export default async function AdminDashboard() {
           {
             href: "/admin/players",
             label: "Manage Players",
-            desc: "Edit, verify, or remove players",
+            desc: "Edit or remove players",
             show: isSuperAdmin(user) || hasPermission(user, PERMISSIONS.MANAGE_PLAYERS),
           },
           {

@@ -13,7 +13,6 @@ interface Stats {
     name?: string;
     photo?: string;
     pubgName?: string;
-    isVerifiedPlayer?: boolean;
   };
   teamId?: { name?: string };
   matchesPlayed: number;
@@ -149,9 +148,6 @@ export default function StatsTable({
                           <div>
                             <div className="flex items-center gap-1">
                               <span className="font-medium">{s.userId.name ?? "Unknown"}</span>
-                              {s.userId.isVerifiedPlayer && (
-                                <Shield size={11} className="text-[var(--success)]" />
-                              )}
                               {s.isHidden && isAdmin && (
                                 <EyeOff size={11} className="text-[var(--warning)]" />
                               )}

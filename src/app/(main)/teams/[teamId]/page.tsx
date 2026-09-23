@@ -17,8 +17,8 @@ export default async function TeamDetailPage({
   const [session] = await Promise.all([auth(), connectDB()]);
 
   const team = await Team.findById(teamId)
-    .populate("leaderId", "name photo pubgName isVerifiedPlayer _id whatsapp")
-    .populate("members.userId", "name photo pubgName isVerifiedPlayer rollNumber _id whatsapp")
+    .populate("leaderId", "name photo pubgName _id whatsapp")
+    .populate("members.userId", "name photo pubgName rollNumber _id whatsapp")
     .lean();
 
   if (!team) notFound();
@@ -46,7 +46,7 @@ export default async function TeamDetailPage({
   let joinRequests: unknown[] = [];
   if (session?.user?.id === teamJson.leaderId._id) {
     joinRequests = await JoinRequest.find({ teamId, status: "pending" })
-      .populate("userId", "name photo pubgName rollNumber isVerifiedPlayer _id")
+      .populate("userId", "name photo pubgName rollNumber _id")
       .sort({ createdAt: -1 })
       .lean();
     joinRequests = JSON.parse(JSON.stringify(joinRequests));

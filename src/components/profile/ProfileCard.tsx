@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { User, Shield, Star, Users, Edit2, ExternalLink, KeyRound } from "lucide-react";
+import { User, Star, Users, Edit2, ExternalLink, KeyRound } from "lucide-react";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import ProfileEditModal from "@/components/profile/ProfileEditModal";
@@ -23,7 +23,6 @@ interface ProfileUser {
   whatsapp?: string;
   role: "player" | "admin" | "super_admin";
   provider?: "credentials" | "google";
-  isVerifiedPlayer?: boolean;
   profileCompleted?: boolean;
   teamId?: string;
   isTeamLeader?: boolean;
@@ -73,11 +72,6 @@ export default function ProfileCard({ user, isOwn = false }: Props) {
               </h2>
               <div className="flex items-center justify-center gap-2 mt-1 flex-wrap">
                 <Badge variant={roleBadgeVariant}>{roleLabel}</Badge>
-                {user.isVerifiedPlayer && (
-                  <Badge variant="success" className="flex items-center gap-1">
-                    <Shield size={10} /> Verified
-                  </Badge>
-                )}
                 {user.isTeamLeader && (
                   <Badge variant="primary" className="flex items-center gap-1">
                     <Star size={10} /> Leader

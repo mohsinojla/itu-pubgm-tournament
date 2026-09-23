@@ -47,7 +47,7 @@ export async function PATCH(
   const { userId } = await params;
   const body = await request.json();
 
-  const allowed = ["isVerifiedPlayer", "statsHidden", "role", "permissions"];
+  const allowed = ["statsHidden", "role", "permissions"];
   const updates: Record<string, unknown> = {};
   for (const key of allowed) {
     if (body[key] !== undefined) updates[key] = body[key];

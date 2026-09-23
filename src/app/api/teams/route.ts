@@ -22,7 +22,7 @@ export async function GET(request: Request) {
       .skip(skip)
       .limit(limit)
       .populate("leaderId", "name photo pubgName")
-      .populate("members.userId", "name photo pubgName isVerifiedPlayer")
+      .populate("members.userId", "name photo pubgName")
       .lean(),
     Team.countDocuments(),
   ]);

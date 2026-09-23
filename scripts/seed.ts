@@ -19,7 +19,6 @@ const UserSchema = new mongoose.Schema({
   semester: Number,
   degreeProgramme: String,
   photo: String,
-  isVerifiedPlayer: { type: Boolean, default: false },
   role: { type: String, enum: ["player", "admin", "super_admin"], default: "player" },
   permissions: [String],
   teamId: { type: mongoose.Schema.Types.ObjectId, ref: "Team" },

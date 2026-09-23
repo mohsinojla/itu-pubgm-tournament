@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Users, Shield, Star } from "lucide-react";
+import { Users, Star } from "lucide-react";
 import Badge from "@/components/ui/Badge";
 import Avatar from "@/components/ui/Avatar";
 
@@ -12,7 +12,6 @@ interface TeamMember {
     name?: string;
     photo?: string;
     pubgName?: string;
-    isVerifiedPlayer?: boolean;
   };
   role: "core" | "substitute";
 }
@@ -91,12 +90,6 @@ export default function TeamCard({ team, currentUserId }: Props) {
                   size="sm"
                   className="border-2 border-[var(--card)]"
                 />
-                {m.userId.isVerifiedPlayer && (
-                  <Shield
-                    size={8}
-                    className="absolute -bottom-0.5 -right-0.5 text-[var(--success)] bg-[var(--card)] rounded-full"
-                  />
-                )}
               </div>
             ))}
             {team.members.length < 5 && (

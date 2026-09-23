@@ -12,8 +12,8 @@ export async function GET(_req: Request, { params }: { params: Promise<{ teamId:
   await connectDB();
 
   const team = await Team.findById(teamId)
-    .populate("leaderId", "name photo pubgName isVerifiedPlayer")
-    .populate("members.userId", "name photo pubgName isVerifiedPlayer rollNumber")
+    .populate("leaderId", "name photo pubgName")
+    .populate("members.userId", "name photo pubgName rollNumber")
     .lean();
 
   if (!team) {

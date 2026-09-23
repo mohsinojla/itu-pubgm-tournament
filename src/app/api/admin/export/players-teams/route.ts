@@ -21,7 +21,7 @@ export async function GET() {
 
   // Fetch every registered player, in a team or not (matches the admin Players table)
   const allPlayers = await User.find({ profileCompleted: true, role: "player" })
-    .select("name email rollNumber pubgId pubgName degreeProgramme semester whatsapp teamId isVerifiedPlayer")
+    .select("name email rollNumber pubgId pubgName degreeProgramme semester whatsapp teamId")
     .sort({ name: 1 })
     .lean();
 
@@ -57,7 +57,6 @@ export async function GET() {
       "Team Name": team?.name ?? "—",
       "Team Role": memberEntry?.role ?? "—",
       "Is Leader": isLeader ? "Yes" : "No",
-      "Verified Player": player.isVerifiedPlayer ? "Yes" : "No",
     };
   });
 
@@ -75,7 +74,6 @@ export async function GET() {
     { wch: 22 },  // Team Name
     { wch: 12 },  // Team Role
     { wch: 10 },  // Is Leader
-    { wch: 14 },  // Verified Player
   ];
 
   const workbook = XLSX.utils.book_new();

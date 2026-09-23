@@ -16,7 +16,7 @@ export const dynamic = "force-dynamic";
 async function getHomeData() {
   await connectDB();
   const [playerCount, teamCount, latestAnnouncements] = await Promise.all([
-    User.countDocuments({ profileCompleted: true }),
+    User.countDocuments({ role: "player" }),
     Team.countDocuments(),
     Announcement.find()
       .sort({ isPinned: -1, createdAt: -1 })

@@ -6,7 +6,7 @@ import Link from "next/link";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import {
-  Users, Shield, Share2, UserPlus, Check, X,
+  Users, Share2, UserPlus, Check, X,
   ChevronRight, Crown, UserMinus, LogOut, Trash2, Phone,
 } from "lucide-react";
 import Badge from "@/components/ui/Badge";
@@ -20,7 +20,6 @@ interface Member {
     photo?: string;
     pubgName?: string;
     rollNumber?: string;
-    isVerifiedPlayer?: boolean;
     whatsapp?: string;
   };
   role: "core" | "substitute";
@@ -287,7 +286,6 @@ export default function TeamDetail({ team, currentUserId, joinRequests, myPendin
                       {m.userId.name ?? "Unknown"}
                     </Link>
                     {isCurrentLeader && <Crown size={12} className="text-[var(--primary)] shrink-0" />}
-                    {m.userId.isVerifiedPlayer && <Shield size={12} className="text-[var(--success)] shrink-0" />}
                   </div>
                   <p className="text-xs text-[var(--text-2)] font-mono">{m.userId.pubgName ?? "—"}</p>
                   {m.userId.whatsapp && (

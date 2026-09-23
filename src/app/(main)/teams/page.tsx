@@ -16,7 +16,7 @@ export default async function TeamsPage() {
     Team.find()
       .sort({ createdAt: -1 })
       .populate("leaderId", "name photo pubgName")
-      .populate("members.userId", "name photo pubgName isVerifiedPlayer")
+      .populate("members.userId", "name photo pubgName")
       .lean(),
     session?.user?.id
       ? User.findById(session.user.id).select("profileCompleted teamId").lean()
