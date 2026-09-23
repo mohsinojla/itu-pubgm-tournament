@@ -45,7 +45,15 @@ export const otpSchema = z.object({
   otp: z.string().length(6, "OTP must be 6 digits"),
 });
 
+// Admin manually entering a player who registered on paper (e.g. at a
+// marketing desk). No password — they sign in later with Google, which
+// links to this record by matching email.
+export const adminCreatePlayerSchema = completeProfileSchema.extend({
+  email: z.string().email("Invalid email address"),
+});
+
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type CompleteProfileInput = z.infer<typeof completeProfileSchema>;
 export type OTPInput = z.infer<typeof otpSchema>;
+export type AdminCreatePlayerInput = z.infer<typeof adminCreatePlayerSchema>;

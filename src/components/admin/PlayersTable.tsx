@@ -5,10 +5,11 @@ import Link from "next/link";
 import Image from "next/image";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import { EyeOff, Eye, Trash2, ExternalLink, Search, Download, Pencil } from "lucide-react";
+import { EyeOff, Eye, Trash2, ExternalLink, Search, Download, Pencil, UserPlus } from "lucide-react";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import AdminPlayerEditModal, { type TeamOption } from "@/components/admin/AdminPlayerEditModal";
+import AdminAddPlayerModal from "@/components/admin/AdminAddPlayerModal";
 
 interface Player {
   _id: string;
@@ -36,6 +37,7 @@ export default function PlayersTable({ players, teams = [] }: { players: Player[
   const teamName = (id?: string) => teams.find((t) => t._id === id)?.name;
   const [loading, setLoading] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
+  const [showAdd, setShowAdd] = useState(false);
 
   async function handleExport() {
     setExporting(true);
@@ -110,6 +112,14 @@ export default function PlayersTable({ players, teams = [] }: { players: Player[
             className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-sm focus:outline-none focus:border-[var(--primary)] transition-colors"
           />
         </div>
+        <button
+          onClick={() => setShowAdd(true)}
+          title="Manually add a player who registered on paper"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--primary)] text-black text-sm font-semibold hover:bg-[var(--primary-dim)] transition-colors shrink-0"
+        >
+          <UserPlus size={14} />
+          Add Player
+        </button>
         <button
           onClick={handleExport}
           disabled={exporting}
@@ -255,6 +265,8 @@ export default function PlayersTable({ players, teams = [] }: { players: Player[
           onClose={() => setEditingId(null)}
         />
       )}
+
+      {showAdd && <AdminAddPlayerModal onClose={() => setShowAdd(false)} />}
     </div>
   );
 }
